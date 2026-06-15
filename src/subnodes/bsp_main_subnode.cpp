@@ -1116,16 +1116,26 @@ json BspDevice::captureRawFrame(const json &params) {
   const int scriptTimeoutMs =
       std::max(static_cast<int>(readyTimeoutS * 1000.0) + 10000, 15000);
   auto result = runScript(rawCaptureScriptPath(), args, scriptTimeoutMs);
+  const QString scriptStdout =
+      QString::fromStdString(result.value("stdout", std::string())).trimmed();
+  const QString scriptStderr =
+      QString::fromStdString(result.value("stderr", std::string())).trimmed();
+  if (!scriptStdout.isEmpty()) {
+    std::cout << "[BspDevice::captureRawFrame] script stdout:\n"
+              << scriptStdout.toStdString() << std::endl;
+  }
+  if (!scriptStderr.isEmpty()) {
+    std::cerr << "[BspDevice::captureRawFrame] script stderr:\n"
+              << scriptStderr.toStdString() << std::endl;
+  }
   if (!result.value("success", false)) {
-    const std::string stderrText = result.value("stderr", std::string());
-    const std::string stdoutText = result.value("stdout", std::string());
+    const std::string stderrText = scriptStderr.toStdString();
+    const std::string stdoutText = scriptStdout.toStdString();
     return {{"success", false},
             {"message", stderrText.empty() ? stdoutText : stderrText}};
   }
 
-  QString stdoutText =
-      QString::fromStdString(result.value("stdout", std::string())).trimmed();
-  QStringList lines = stdoutText.split(QLatin1Char('\n'), Qt::SkipEmptyParts);
+  QStringList lines = scriptStdout.split(QLatin1Char('\n'), Qt::SkipEmptyParts);
   bool ok = false;
   const qint64 remoteSize =
       lines.isEmpty() ? 0 : lines.last().trimmed().toLongLong(&ok);
@@ -1484,36 +1494,71 @@ json BspRecordingSubnode::cmdCaptureRawFrame(uint32_t, const std::string &,
       "remote_frame_path", std::string(DEFAULT_RAW_REMOTE_FRAME_PATH));
   const std::string remoteTimestamp = captureResult.value(
       "remote_timestamp_path", std::string(DEFAULT_RAW_REMOTE_TIMESTAMP_PATH));
-  auto fetchFrame = sshManager_->copyFileFromGlasses(remoteFrame, frameTmp.toStdString());
+  const auto fetchFrame =
+      sshManager_->copyFileFromGlasses(remoteFrame, frameTmp.toStdString());
+  const auto fetchTimestamp =
+      sshManager_->copyFileFromGlasses(remoteTimestamp, timestampTmp.toStdString());
+  const QString canonicalTimestampText = QString::number(timestampNs);
+  QString glassTimestampValue = canonicalTimestampText;
+  QString glassTimestampSource =
+      QStringLiteral("fallback_canonical_timestamp_ns");
+  QString glassTimestampWarning;
+
   if (fetchFrame.value("success", false)) {
-    auto fetchTimestamp =
-        sshManager_->copyFileFromGlasses(remoteTimestamp, timestampTmp.toStdString());
     QFile frameFile(frameTmp);
-    QFile timestampFile(timestampTmp);
     QString frameText;
-    QString timestampText = QStringLiteral("__MISSING__");
     if (frameFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
       frameText = QString::fromUtf8(frameFile.readAll());
     }
-    if (fetchTimestamp.value("success", false) &&
-        timestampFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-      timestampText = QString::fromUtf8(timestampFile.readAll());
-    }
     frameFilePath = QDir(imageDir).filePath(QStringLiteral("frame.txt"));
-    glassTimestampFilePath =
-        QDir(imageDir).filePath(QStringLiteral("glass_timestamp.txt"));
     QFile frameOut(frameFilePath);
     if (frameOut.open(QIODevice::Append | QIODevice::Text)) {
       QTextStream stream(&frameOut);
       stream << rawFilename << " " << normalizedSidecarText(frameText) << "\n";
     }
-    QFile timestampOut(glassTimestampFilePath);
-    if (timestampOut.open(QIODevice::Append | QIODevice::Text)) {
-      QTextStream stream(&timestampOut);
-      stream << rawFilename << " "
-             << normalizedSidecarText(timestampText, QStringLiteral("__MISSING__"))
-             << "\n";
+  } else {
+    std::cerr << "[capture_raw_frame] failed to download frame sidecar from "
+              << remoteFrame << ": "
+              << fetchFrame.value("message", std::string()) << std::endl;
+  }
+
+  if (fetchTimestamp.value("success", false)) {
+    QFile timestampFile(timestampTmp);
+    if (timestampFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+      const QString timestampText = QString::fromUtf8(timestampFile.readAll());
+      const QString normalizedTimestamp = normalizedSidecarText(timestampText);
+      if (!normalizedTimestamp.isEmpty() &&
+          normalizedTimestamp != QStringLiteral("__MISSING__")) {
+        glassTimestampValue = normalizedTimestamp;
+        glassTimestampSource = QStringLiteral("remote_file");
+      } else {
+        glassTimestampWarning =
+            QStringLiteral("Remote timestamp sidecar is empty, fallback to canonical timestamp ns");
+      }
+    } else {
+      glassTimestampWarning =
+          QStringLiteral("Remote timestamp sidecar downloaded but cannot be read, fallback to canonical timestamp ns");
     }
+  } else {
+    glassTimestampWarning = QStringLiteral(
+        "Remote timestamp sidecar download failed, fallback to canonical timestamp ns");
+    std::cerr << "[capture_raw_frame] failed to download timestamp sidecar from "
+              << remoteTimestamp << ": "
+              << fetchTimestamp.value("message", std::string()) << std::endl;
+  }
+
+  glassTimestampFilePath =
+      QDir(imageDir).filePath(QStringLiteral("glass_timestamp.txt"));
+  QFile timestampOut(glassTimestampFilePath);
+  if (timestampOut.open(QIODevice::Append | QIODevice::Text)) {
+    QTextStream stream(&timestampOut);
+    stream << rawFilename << " " << glassTimestampValue << "\n";
+  }
+  if (!glassTimestampWarning.isEmpty()) {
+    std::cerr << "[capture_raw_frame] " << glassTimestampWarning.toStdString()
+              << " (raw=" << rawFilename.toStdString()
+              << ", fallback=" << canonicalTimestampText.toStdString()
+              << ")" << std::endl;
   }
   QFile::remove(frameTmp);
   QFile::remove(timestampTmp);
@@ -1582,6 +1627,10 @@ json BspRecordingSubnode::cmdCaptureRawFrame(uint32_t, const std::string &,
                    {"glass_timestamp_file", nullptr},
                    {"remote_size", captureResult.value("remote_size", 0)},
                    {"canonical_timestamp_ns", timestampNs},
+                   {"glass_timestamp_value", glassTimestampValue.toStdString()},
+                   {"glass_timestamp_source",
+                    glassTimestampSource.toStdString()},
+                   {"glass_timestamp_warning", nullptr},
                    {"pre_capture_rgb_temperature", nullptr},
                    {"restored_first_rgb_temperature", nullptr},
                    {"average_rgb_temperature", nullptr},
@@ -1595,6 +1644,9 @@ json BspRecordingSubnode::cmdCaptureRawFrame(uint32_t, const std::string &,
   }
   if (!glassTimestampFilePath.isEmpty()) {
     response["glass_timestamp_file"] = glassTimestampFilePath.toStdString();
+  }
+  if (!glassTimestampWarning.isEmpty()) {
+    response["glass_timestamp_warning"] = glassTimestampWarning.toStdString();
   }
   if (releasedForCapture) {
     response["rgb_restore_success"] = restoreSuccess;

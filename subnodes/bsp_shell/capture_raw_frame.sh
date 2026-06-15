@@ -107,6 +107,15 @@ printf '[capture_raw_frame remote] launching cameratest: %s %s %s %s %s %s %s %s
     "$remote_raw_path" "$remote_frame_path" "$remote_timestamp_path" >&2
 "$remote_cameratest" "$raw_resolution" "$raw_exposure_mode" "$raw_exposure_value" "$raw_gain" "$remote_raw_path" "$remote_frame_path" "$remote_timestamp_path" 4
 printf '[capture_raw_frame remote] cameratest exited\n' >&2
+
+for output_path in "$remote_raw_path" "$remote_frame_path" "$remote_timestamp_path"; do
+    if [ -f "$output_path" ]; then
+        output_size="$(wc -c < "$output_path" | tr -d '[:space:]')"
+        printf '[capture_raw_frame remote] output ready: %s (%s bytes)\n' "$output_path" "${output_size:-0}" >&2
+    else
+        printf '[capture_raw_frame remote] output missing: %s\n' "$output_path" >&2
+    fi
+done
 EOF
 then
     echo "cameratest execution failed" >&2
