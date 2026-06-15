@@ -17,6 +17,7 @@
 #include <chrono>
 #include <csignal>
 #include <iostream>
+#include <optional>
 #include <stdexcept>
 #include <thread>
 
@@ -55,6 +56,29 @@ struct ImuSourceProbe {
   int64_t maxTimestampGapNs = 0;
   int64_t maxTimestampBacktrackNs = 0;
 };
+
+std::optional<double> jsonNumberIfPresent(const json &value, const char *key) {
+  if (!value.is_object() || !value.contains(key)) {
+    return std::nullopt;
+  }
+  const auto &field = value.at(key);
+  if (!field.is_number()) {
+    return std::nullopt;
+  }
+  return field.get<double>();
+}
+
+std::optional<double> firstAvailableRgbTemperature(const BspDevice *device) {
+  if (!device) {
+    return std::nullopt;
+  }
+
+  if (const auto latestFrameTemp =
+          jsonNumberIfPresent(device->latestRgbFrameMeta(), "temperature")) {
+    return latestFrameTemp;
+  }
+  return jsonNumberIfPresent(device->latestTemperatures(), "rgb_temperature");
+}
 
 void logImuSourceProbe(const char *tag, ImuSourceProbe &probe,
                        int64_t arrivalNs, int64_t timestampNs, int imuIdx) {
@@ -1376,6 +1400,8 @@ json BspRecordingSubnode::cmdCaptureRawFrame(uint32_t, const std::string &,
   }
 
   json frameMeta = bspDevice->latestRgbFrameMeta();
+  const auto preCaptureRgbTemperature =
+      jsonNumberIfPresent(frameMeta, "temperature");
   if (frameMeta.empty() &&
       !params.value("direct_capture_without_start_device", false)) {
     return {{"success", false},
@@ -1512,6 +1538,7 @@ json BspRecordingSubnode::cmdCaptureRawFrame(uint32_t, const std::string &,
 
   bool restoreSuccess = true;
   std::string restoreMessage;
+  std::optional<double> restoredFirstRgbTemperature;
   if (releasedForCapture) {
     auto rebootResult = bspDevice->rebootViaSshAndWait();
     restoreSuccess = rebootResult.value("success", false);
@@ -1525,7 +1552,20 @@ json BspRecordingSubnode::cmdCaptureRawFrame(uint32_t, const std::string &,
       auto startResult = bspDevice->start({{"camera_mode", CAMERA_MODE_RGB}});
       restoreSuccess = startResult.value("success", false);
       restoreMessage = startResult.value("message", std::string());
+      if (restoreSuccess) {
+        restoredFirstRgbTemperature = firstAvailableRgbTemperature(bspDevice);
+      }
     }
+  }
+
+  std::optional<double> averageRgbTemperature;
+  if (preCaptureRgbTemperature && restoredFirstRgbTemperature) {
+    averageRgbTemperature =
+        (*preCaptureRgbTemperature + *restoredFirstRgbTemperature) / 2.0;
+  } else if (preCaptureRgbTemperature) {
+    averageRgbTemperature = *preCaptureRgbTemperature;
+  } else if (restoredFirstRgbTemperature) {
+    averageRgbTemperature = *restoredFirstRgbTemperature;
   }
 
   json response = {{"success", restoreSuccess},
@@ -1542,6 +1582,9 @@ json BspRecordingSubnode::cmdCaptureRawFrame(uint32_t, const std::string &,
                    {"glass_timestamp_file", nullptr},
                    {"remote_size", captureResult.value("remote_size", 0)},
                    {"canonical_timestamp_ns", timestampNs},
+                   {"pre_capture_rgb_temperature", nullptr},
+                   {"restored_first_rgb_temperature", nullptr},
+                   {"average_rgb_temperature", nullptr},
                    {"rgb_restore_success", nullptr},
                    {"rgb_restore_message", restoreMessage}};
   if (!metadataFilePath.isEmpty()) {
@@ -1555,6 +1598,15 @@ json BspRecordingSubnode::cmdCaptureRawFrame(uint32_t, const std::string &,
   }
   if (releasedForCapture) {
     response["rgb_restore_success"] = restoreSuccess;
+  }
+  if (preCaptureRgbTemperature) {
+    response["pre_capture_rgb_temperature"] = *preCaptureRgbTemperature;
+  }
+  if (restoredFirstRgbTemperature) {
+    response["restored_first_rgb_temperature"] = *restoredFirstRgbTemperature;
+  }
+  if (averageRgbTemperature) {
+    response["average_rgb_temperature"] = *averageRgbTemperature;
   }
   return response;
 }
