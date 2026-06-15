@@ -1,0 +1,91 @@
+{
+  "version": "v1.0.2",
+  "update_info": "运行录制脚本前，请先点击 BSP RGB 页的一键启动 RGB，稳定连接眼镜并进入 RGB 预览后再执行抓取或录制。",
+  "usb_product_catalog": [
+    {
+      "vid": "0x3318",
+      "pid": "0x0436",
+      "name": "Gina",
+      "agent_name": "glasses_bsp_node",
+      "ssh_preferred": true
+    },
+    {
+      "vid": "0x3318",
+      "pid": "0x043a",
+      "name": "Hylla",
+      "agent_name": "glasses_bsp_node",
+      "ssh_preferred": true
+    }
+  ],
+  "script_catalog": {
+    "agents": {
+      "glasses_bsp_node": [
+        {
+          "relative_path": "scripts/record_bsp_imu.py",
+          "supported_model_ids": [
+            "1082"
+          ],
+          "supported_models": {
+            "1082": "Hylla"
+          },
+          "required_agents": [
+            "glasses_bsp_node"
+          ],
+          "enabled": true
+        },
+        {
+          "relative_path": "scripts/record_bsp_imu_static.py",
+          "supported_model_ids": [
+            "1082"
+          ],
+          "supported_models": {
+            "1082": "Hylla"
+          },
+          "required_agents": [
+            "glasses_bsp_node"
+          ],
+          "enabled": true
+        },
+        {
+          "relative_path": "scripts/record_bsp_imu_dynamic.py",
+          "supported_model_ids": [
+            "1082"
+          ],
+          "supported_models": {
+            "1082": "Hylla"
+          },
+          "required_agents": [
+            "glasses_bsp_node"
+          ],
+          "enabled": true
+        },
+        {
+          "relative_path": "scripts/record_bsp_imu_cam.py",
+          "supported_model_ids": [
+            "1082"
+          ],
+          "supported_models": {
+            "1082": "Hylla"
+          },
+          "required_agents": [
+            "glasses_bsp_node"
+          ],
+          "enabled": true
+        },
+        {
+          "relative_path": "scripts/record_bsp_rgb_raw.py",
+          "supported_model_ids": [
+            "1082"
+          ],
+          "supported_models": {
+            "1082": "Hylla"
+          },
+          "required_agents": [
+            "glasses_bsp_node"
+          ],
+          "enabled": true
+        }
+      ]
+    }
+  }
+}

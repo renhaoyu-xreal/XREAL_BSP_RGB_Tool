@@ -1,0 +1,39 @@
+FROM gcc:7.5
+
+# 更新apt源为archive版本（因为buster已经不再维护）
+RUN sed -i 's/deb.debian.org/archive.debian.org/g' /etc/apt/sources.list && \
+    sed -i 's/security.debian.org/archive.debian.org/g' /etc/apt/sources.list && \
+    sed -i '/deb-src/s/^/#/' /etc/apt/sources.list && \
+    echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until
+
+# 更新系统包并安装必要的依赖
+RUN apt-get update -y && apt-get install -y \
+    libtool \
+    pkg-config \
+    build-essential \
+    autoconf \
+    automake \
+    git
+
+# 创建工作目录
+WORKDIR /tmp/zeromq
+
+# 克隆ZeroMQ源代码
+RUN git clone https://github.com/zeromq/libzmq.git .
+
+# 切换到稳定版本（选择4.3.4作为稳定版本）
+RUN git checkout v4.3.4
+
+# 配置并编译ZeroMQ，添加-fPIC选项
+RUN ./autogen.sh && \
+    ./configure --enable-static --disable-shared CFLAGS="-fPIC" CXXFLAGS="-fPIC" && \
+    make -j4 && \
+    make install
+
+# 准备输出目录
+RUN mkdir -p /output/zeromq/include /output/zeromq/lib
+
+# 复制头文件和库文件到输出目录
+RUN cp -r /usr/local/include/zmq* /output/zeromq/include/ && \
+    cp /usr/local/lib/libzmq.a /output/zeromq/lib/ && \
+    cp -r /usr/local/lib/pkgconfig /output/zeromq/lib/

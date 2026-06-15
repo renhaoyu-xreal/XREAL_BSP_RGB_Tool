@@ -1,0 +1,523 @@
+{
+    "nreal_link": {
+        "GROUP_ID": 1,
+        "GROUP_NAME": "MSG_GROUP_NREAL_LINK",
+        "MSG_ID": 1,
+        "MSG_NAME": "NREAL_LINK",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "u32 type",
+            "f32 delay_seconds[2]",
+            "f32 data[4]"
+        ]
+    },
+    "optitrack_abc_2": {
+        "GROUP_ID": 251,
+        "GROUP_NAME": "MSG_GROUP_OPTITRACK",
+        "MSG_ID": 3,
+        "MSG_NAME": "OPTITRACK_AIR_DATA",
+        "struct": [
+            "u64 ts_us",
+            "f64 time",
+            "u64 frame_id",
+            "f64 quaternion[4]",
+            "f64 position[3]",
+            "f64 mme[1]",
+            "f64 marker_points[12]"
+        ]
+    },
+    "optitrack_abc_3": {
+        "GROUP_ID": 251,
+        "GROUP_NAME": "MSG_GROUP_OPTITRACK",
+        "MSG_ID": 4,
+        "MSG_NAME": "OPTITRACK_LIGHT_DATA",
+        "struct": [
+            "u64 ts_us",
+            "f64 time",
+            "u64 frame_id",
+            "f64 quaternion[4]",
+            "f64 position[3]",
+            "f64 mme[1]",
+            "f64 marker_points[12]"
+        ]
+    },
+
+    "nreal_link_count_light_data": {
+        "GROUP_ID": 128,
+        "GROUP_NAME": "MSG_GROUP_LIGHT_DATA",
+        "MSG_ID": 10,
+        "MSG_NAME": "LIGHT_DATA_NREAL_LINK_COUNT",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "u32 type",
+            "f32 data0",
+            "f32 data1",
+            "f32 data2",
+            "f32 data3",
+            "f32 data4",
+            "f32 data5"
+        ]
+    },
+    "nreal_link_count_mobile_data": {
+        "GROUP_ID": 126,
+        "GROUP_NAME": "MSG_GROUP_MOBILE_DATA",
+        "MSG_ID": 10,
+        "MSG_NAME": "MOBILE_DATA_NREAL_LINK_COUNT",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "u32 type",
+            "f32 data0",
+            "f32 data1",
+            "f32 data2",
+            "f32 data3",
+            "f32 data4",
+            "f32 data5"
+        ]
+    },
+
+    "mobile_data": {
+        "GROUP_ID": 126,
+        "GROUP_NAME": "MSG_GROUP_MOBILE_DATA",
+        "MSG_ID": 1,
+        "MSG_NAME": "MOBILE_DATA",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "u32 type",
+            "f32 data0",
+            "f32 data1",
+            "f32 data2",
+            "f32 data3",
+            "f32 data4",
+            "f32 data5"
+	]
+    },
+    "air_data": {
+        "GROUP_ID": 127,
+        "GROUP_NAME": "MSG_GROUP_AIR_DATA",
+        "MSG_ID": 1,
+        "MSG_NAME": "AIR_DATA",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "u32 type",
+            "f32 data0",
+            "f32 data1",
+            "f32 data2",
+            "f32 data3",
+            "f32 data4",
+            "f32 data5"
+	]
+    },
+    "light_data": {
+        "GROUP_ID": 13,
+        "GROUP_NAME": "MSG_GROUP_LIGHT_DATA",
+        "MSG_ID": 1,
+        "MSG_NAME": "LIGHT_DATA",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "u32 type",
+            "f32 data0",
+            "f32 data1",
+            "f32 data2",
+            "f32 data3",
+            "f32 data4",
+            "f32 data5"
+	]
+    },    
+    "nio_data": {
+        "GROUP_ID": 40,
+        "GROUP_NAME": "MSG_GROUP_NIO_DATA",
+        "MSG_ID": 1,
+        "MSG_NAME": "NIO_DATA",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "u32 type",
+            "f32 data0",
+            "f32 data1",
+            "f32 data2",
+            "f32 data3",
+            "f32 data4",
+            "f32 data5"
+	]
+    },
+    "mobile_data": {
+        "GROUP_ID": 11,
+        "GROUP_NAME": "MSG_GROUP_MOBILE_PHOTO_DATA",
+        "MSG_ID": 1,
+        "MSG_NAME": "MOBILE_PHOTO_DATA",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "u32 type",
+            "f32 data0",
+            "f32 data1",
+            "f32 data2",
+            "f32 data3",
+            "f32 data4",
+            "f32 data5"
+	]
+    },
+    "result_mobile_q_data": {
+        "GROUP_ID": 60,
+        "GROUP_NAME": "MSG_GROUP_RESULT_MOBILE_DATA",
+        "MSG_ID": 1,
+        "MSG_NAME": "RESULT_MOBILE_DATA",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "u32 type",
+            "f32 data0",
+            "f32 data1",
+            "f32 data2",
+            "f32 data3",
+            "f32 data4",
+            "f32 data5"
+	]
+    },
+    "result_glasses_q_data": {
+        "GROUP_ID": 70,
+        "GROUP_NAME": "MSG_GROUP_RESULT_GLASSES_DATA",
+        "MSG_ID": 1,
+        "MSG_NAME": "RESULT_GLASSES_DATA",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "u32 type",
+            "f32 data0",
+            "f32 data1",
+            "f32 data2",
+            "f32 data3",
+            "f32 data4",
+            "f32 data5"
+	]
+    },
+    "gyro_data": {
+        "GROUP_ID": 253,
+        "GROUP_NAME": "MSG_GROUP_IMU_DATA",
+        "MSG_ID": 1,
+        "MSG_NAME": "GYRO_DATA",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "f64 type",
+            "f64 data0",
+            "f64 data1",
+            "f64 data2",
+            "f64 data3",
+            "f64 data4",
+            "f64 data5"
+	]
+    },
+    "accel_data": {
+        "GROUP_ID": 253,
+        "GROUP_NAME": "MSG_GROUP_IMU_DATA",
+        "MSG_ID": 2,
+        "MSG_NAME": "ACCEL_DATA",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "f64 type",
+            "f64 data0",
+            "f64 data1",
+            "f64 data2",
+            "f64 data3",
+            "f64 data4",
+            "f64 data5"
+	]
+    },
+    "mag_data": {
+        "GROUP_ID": 253,
+        "GROUP_NAME": "MSG_GROUP_IMU_DATA",
+        "MSG_ID": 3,
+        "MSG_NAME": "MAG_DATA",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "f64 type",
+            "f64 data0",
+            "f64 data1",
+            "f64 data2",
+            "f64 data3",
+            "f64 data4",
+            "f64 data5"
+	]
+    },
+    "temperature_data": {
+        "GROUP_ID": 253,
+        "GROUP_NAME": "MSG_GROUP_IMU_DATA",
+        "MSG_ID": 12,
+        "MSG_NAME": "TEMPERATURE_DATA",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "f64 type",
+            "f64 data0",
+            "f64 data1",
+            "f64 data2",
+            "f64 data3",
+            "f64 data4",
+            "f64 data5"
+	]
+    },
+    "imu_latency": {
+        "GROUP_ID": 253,
+        "GROUP_NAME": "MSG_GROUP_IMU_DATA",
+        "MSG_ID": 25,
+        "MSG_NAME": "IMU_LATENCY_DATA",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "f64 type",
+            "f64 data0",
+            "f64 data1",
+            "f64 data2",
+            "f64 data3",
+            "f64 data4",
+            "f64 data5"
+	]
+    },
+    "mag_latency": {
+        "GROUP_ID": 253,
+        "GROUP_NAME": "MSG_GROUP_IMU_DATA",
+        "MSG_ID": 26,
+        "MSG_NAME": "MAG_LATENCY_DATA",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "f64 type",
+            "f64 data0",
+            "f64 data1",
+            "f64 data2",
+            "f64 data3",
+            "f64 data4",
+            "f64 data5"
+	]
+    },
+    "imu_frame_id": {
+        "GROUP_ID": 253,
+        "GROUP_NAME": "MSG_GROUP_IMU_DATA",
+        "MSG_ID": 27,
+        "MSG_NAME": "IMU_FRAME_ID_DATA",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "f64 type",
+            "f64 data0",
+            "f64 data1",
+            "f64 data2",
+            "f64 data3",
+            "f64 data4",
+            "f64 data5"
+	]
+    },
+    "mag_frame_id": {
+        "GROUP_ID": 253,
+        "GROUP_NAME": "MSG_GROUP_IMU_DATA",
+        "MSG_ID": 28,
+        "MSG_NAME": "MAG_FRAME_ID_DATA",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "f64 type",
+            "f64 data0",
+            "f64 data1",
+            "f64 data2",
+            "f64 data3",
+            "f64 data4",
+            "f64 data5"
+	]
+    },
+    "sdk_cam": {
+        "GROUP_ID": 253,
+        "GROUP_NAME": "MSG_GROUP_STATUS",
+        "MSG_ID": 403,
+        "struct": [
+            "u64 ts_us",
+            "f64 camera_count",
+            "f64 data_bytes",
+            "f64 pixel_format",
+            "f64 0_step",
+            "f64 0_w",
+            "f64 0_h",
+            "f64 0_exp",
+            "f64 0_gain",
+            "f64 0_offset",
+            "f64 0_timestamp",
+            "f64 1_step",
+            "f64 1_w",
+            "f64 1_h",
+            "f64 1_exp",
+            "f64 1_gain",
+            "f64 1_offset",
+            "f64 1_timestamp"
+        ]
+    },
+    "imu0_gyro_data": {
+        "GROUP_ID": 253,
+        "GROUP_NAME": "MSG_GROUP_IMU0_DATA",
+        "MSG_ID": 201,
+        "MSG_NAME": "GYRO_DATA",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "f64 type",
+            "f64 data0",
+            "f64 data1",
+            "f64 data2",
+            "f64 data3",
+            "f64 data4",
+            "f64 data5"
+	    ]
+    },
+    "imu0_accel_data": {
+        "GROUP_ID": 253,
+        "GROUP_NAME": "MSG_GROUP_IMU0_DATA",
+        "MSG_ID": 202,
+        "MSG_NAME": "ACCEL_DATA",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "f64 type",
+            "f64 data0",
+            "f64 data1",
+            "f64 data2",
+            "f64 data3",
+            "f64 data4",
+            "f64 data5"
+	    ]
+    },
+    "imu0_mag_data": {
+        "GROUP_ID": 253,
+        "GROUP_NAME": "MSG_GROUP_IMU0_DATA",
+        "MSG_ID": 203,
+        "MSG_NAME": "MAG_DATA",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "f64 type",
+            "f64 data0",
+            "f64 data1",
+            "f64 data2",
+            "f64 data3",
+            "f64 data4",
+            "f64 data5"
+	      ]
+    },
+    "imu0_temperature_data": {
+        "GROUP_ID": 253,
+        "GROUP_NAME": "MSG_GROUP_IMU0_DATA",
+        "MSG_ID": 212,
+        "MSG_NAME": "TEMPERATURE_DATA",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "f64 type",
+            "f64 data0",
+            "f64 data1",
+            "f64 data2",
+            "f64 data3",
+            "f64 data4",
+            "f64 data5"
+	      ]
+    },
+    "imu0_imu_latency": {
+        "GROUP_ID": 253,
+        "GROUP_NAME": "MSG_GROUP_IMU0_DATA",
+        "MSG_ID": 225,
+        "MSG_NAME": "IMU_LATENCY_DATA",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "f64 type",
+            "f64 data0",
+            "f64 data1",
+            "f64 data2",
+            "f64 data3",
+            "f64 data4",
+            "f64 data5"
+	      ]
+    },
+    "imu0_mag_latency": {
+        "GROUP_ID": 253,
+        "GROUP_NAME": "MSG_GROUP_IMU0_DATA",
+        "MSG_ID": 226,
+        "MSG_NAME": "MAG_LATENCY_DATA",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "f64 type",
+            "f64 data0",
+            "f64 data1",
+            "f64 data2",
+            "f64 data3",
+            "f64 data4",
+            "f64 data5"
+	      ]
+    },
+    "imu0_imu_frame_id": {
+        "GROUP_ID": 253,
+        "GROUP_NAME": "MSG_GROUP_IMU0_DATA",
+        "MSG_ID": 227,
+        "MSG_NAME": "IMU_FRAME_ID_DATA",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "f64 type",
+            "f64 data0",
+            "f64 data1",
+            "f64 data2",
+            "f64 data3",
+            "f64 data4",
+            "f64 data5"
+	      ]
+    },
+    "imu0_mag_frame_id": {
+        "GROUP_ID": 253,
+        "GROUP_NAME": "MSG_GROUP_IMU0_DATA",
+        "MSG_ID": 228,
+        "MSG_NAME": "MAG_FRAME_ID_DATA",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "f64 type",
+            "f64 data0",
+            "f64 data1",
+            "f64 data2",
+            "f64 data3",
+            "f64 data4",
+            "f64 data5"
+	      ]
+    }
+}

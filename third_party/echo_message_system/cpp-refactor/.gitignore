@@ -1,0 +1,74 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Linker files
+*.ilk
+
+# Debugger Files
+*.pdb
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# debug information files
+*.dwo
+
+
+
+# CMake 核心编译文件/目录
+cmake-build-debug/
+cmake-build-release/
+build/                # 通用 CMake 构建目录
+**/build/             # 所有位置的build目录
+CMakeCache.txt        # CMake 缓存文件
+CMakeFiles/           # CMake 生成的编译目录
+CMakeScripts/
+Testing/
+Makefile              # CMake 生成的 Makefile
+cmake_install.cmake   # CMake 安装脚本
+install_manifest.txt  # 安装清单
+CTestTestfile.cmake
+
+# CMake 编译过程中的临时文件
+*.cmake               # 排除自定义的 .cmake 配置文件外的自动生成文件（如 CMakeCCompiler.cmake）
+*.ninja               # Ninja 构建系统文件（若用 Ninja 编译）
+*.ninja_log
+.directory            # 部分系统生成的目录文件
+
+
+# 补充 cpp 目录下的临时文件
+cpp/build/
+cpp/*.log
+cpp/test_logs/*.log
+cpp/build/*.log
+
+# 确保 external 目录下的所有文件都被跟踪
+!external/
+!external/**/*

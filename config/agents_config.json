@@ -1,0 +1,30 @@
+{
+  "watchdog": {
+    "check_interval": 1.0,
+    "startup_delay": 1.0,
+    "check_timeout": 15.0
+  },
+  "agents": {
+    "glasses_bsp_node": {
+      "name": "glasses_bsp_node",
+      "subnode_path": "build/bsp_main_subnode",
+      "subnode_host": "localhost",
+      "goal_port": 5694,
+      "feedback_port": 5695,
+      "root_path": "data",
+      "custom_params": {},
+      "init_device_params": {
+        "device_type": "bsp_default"
+      },
+      "init_device_pause_duration": 20.0,
+      "suppress_disconnect_dialog": true,
+      "supported_devices": {
+        "1082": "Hylla",
+        "1078": "Gina"
+      }
+    }
+  },
+  "primary_agents": [
+    "glasses_bsp_node"
+  ]
+}

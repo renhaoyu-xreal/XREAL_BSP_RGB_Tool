@@ -1,0 +1,196 @@
+{
+    "nreal_link": {
+        "GROUP_ID": 1,
+        "GROUP_NAME": "MSG_GROUP_NREAL_LINK",
+        "MSG_ID": 1,
+        "MSG_NAME": "NREAL_LINK",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "u32 type",
+            "f32 delay_seconds[2]",
+            "f32 data[4]"
+        ]
+    },
+    "air_data": {
+        "GROUP_ID": 127,
+        "GROUP_NAME": "MSG_GROUP_AIR_DATA",
+        "MSG_ID": 1,
+        "MSG_NAME": "AIR_DATA",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "u32 type",
+            "f32 data0",
+            "f32 data1",
+            "f32 data2",
+            "f32 data3",
+            "f32 data4",
+            "f32 data5"
+        ]
+    },
+    "mobile_data": {
+        "GROUP_ID": 11,
+        "GROUP_NAME": "MSG_GROUP_MOBILE_PHOTO_DATA",
+        "MSG_ID": 1,
+        "MSG_NAME": "MOBILE_PHOTO_DATA",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "u32 type",
+            "f32 data0",
+            "f32 data1",
+            "f32 data2",
+            "f32 data3",
+            "f32 data4",
+            "f32 data5"
+        ]
+    },
+    "6dof_pose_data_tcp_test": {
+        "GROUP_ID": 12,
+        "GROUP_NAME": "MSG_GROUP_POSE_DATA",
+        "MSG_ID": 1,
+        "MSG_NAME": "SIX_POSE_DATA_TCP_TEST",
+        "struct": [
+            "u64 ts_us",
+            "f64 timestamp_ns",
+            "f64 position[3]",
+            "f64 quaternion[4]"
+        ]
+    },
+    "6dof_pose_data_test": {
+        "GROUP_ID": 14,
+        "GROUP_NAME": "MSG_GROUP_POSE_DATA",
+        "MSG_ID": 1,
+        "MSG_NAME": "SIX_POSE_DATA_TCP_TEST",
+        "struct": [
+            "u64 ts_us",
+            "f64 timestamp_ns",
+            "f64 position[3]",
+            "f64 quaternion[4]"
+        ]
+    },
+    "air_data_count": {
+        "GROUP_ID": 127,
+        "GROUP_NAME": "MSG_GROUP_AIR_DATA",
+        "MSG_ID": 10,
+        "MSG_NAME": "AIR_DATA_COUNT",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "u32 type",
+            "f32 data0",
+            "f32 data1",
+            "f32 data2",
+            "f32 data3",
+            "f32 data4",
+            "f32 data5"
+        ]
+    },
+    "mobile_data_count": {
+        "GROUP_ID": 11,
+        "GROUP_NAME": "MSG_GROUP_MOBILE_PHOTO_DATA",
+        "MSG_ID": 10,
+        "MSG_NAME": "MOBILE_PHOTO_DATA_COUNT",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "u32 type",
+            "f32 data0",
+            "f32 data1",
+            "f32 data2",
+            "f32 data3",
+            "f32 data4",
+            "f32 data5"
+        ]
+    },
+    "6dof_pose_data_tcp_test_count": {
+        "GROUP_ID": 12,
+        "GROUP_NAME": "MSG_GROUP_POSE_DATA",
+        "MSG_ID": 10,
+        "MSG_NAME": "SIX_POSE_DATA_TCP_TEST_COUNT",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "u32 type",
+            "f32 data0",
+            "f32 data1",
+            "f32 data2",
+            "f32 data3",
+            "f32 data4",
+            "f32 data5"
+        ]
+    },
+    "6dof_pose_data_count": {
+        "GROUP_ID": 253,
+        "GROUP_NAME": "MSG_GROUP_SIX_POSE_DATA",
+        "MSG_ID": 10,
+        "MSG_NAME": "SIX_POSE_DATA_COUNT",
+        "struct": [
+            "u64 ts_us",
+            "u64 onsensor_timestamp_us",
+            "u64 timestamp_ns",
+            "u32 type",
+            "f32 data0",
+            "f32 data1",
+            "f32 data2",
+            "f32 data3",
+            "f32 data4",
+            "f32 data5"
+        ]
+    },
+    "6dof_pose_data_propagator": {
+        "GROUP_ID": 253,
+        "GROUP_NAME": "MSG_GROUP_SIX_POSE_DATA",
+        "MSG_ID": 501,
+        "MSG_NAME": "SIX_POSE_DATA_PROPAGATOR",
+        "struct": [
+            "u64 ts_us",
+            "f64 timestamp_ns",
+            "f64 position[3]",
+            "f64 quaternion[4]"
+        ]
+    },
+    "6dof_pose_data_filter": {
+        "GROUP_ID": 253,
+        "GROUP_NAME": "MSG_GROUP_SIX_POSE_DATA",
+        "MSG_ID": 502,
+        "MSG_NAME": "SIX_POSE_DATA_FILTER",
+        "struct": [
+            "u64 ts_us",
+            "f64 timestamp_ns",
+            "f64 position[3]",
+            "f64 quaternion[4]"
+        ]
+    },
+    "6dof_pose_data_clone": {
+        "GROUP_ID": 253,
+        "GROUP_NAME": "MSG_GROUP_SIX_POSE_DATA",
+        "MSG_ID": 500,
+        "MSG_NAME": "SIX_POSE_DATA_CLONE",
+        "struct": [
+            "u64 ts_us",
+            "f64 timestamp_ns",
+            "f64 position[3]",
+            "f64 quaternion[4]"
+        ]
+    },
+    "6dof_pose_data_503": {
+        "GROUP_ID": 253,
+        "GROUP_NAME": "MSG_GROUP_SIX_POSE_DATA",
+        "MSG_ID": 503,
+        "MSG_NAME": "SIX_POSE_DATA_CLONE",
+        "struct": [
+            "u64 ts_us",
+            "f64 timestamp_ns",
+            "f64 position[3]",
+            "f64 quaternion[4]"
+        ]
+    }
+}

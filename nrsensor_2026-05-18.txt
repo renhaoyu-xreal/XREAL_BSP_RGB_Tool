@@ -1,0 +1,434 @@
+[2026-05-18 10:38:23.871] [11497] [WARN] [NRSensor] Log Info: pid:11483, time:2026-05-18 10:38:23 (+0800), features:0
+[2026-05-18 10:38:23.871] [11497] [WARN] [NRSensor] MCU message interface is null!
+[2026-05-18 10:38:23.871] [11497] [INFO] [NRSensor] MCU initializing,0x72956065b2c0
+[2026-05-18 10:38:23.871] [11497] [INFO] [NRSensor] MCU got invalid device type, The driver will enumerate it by itself
+[2026-05-18 10:38:23.871] [11497] [INFO] [NRSensor] MCU device type [6],new driver,work type = (0,not server),work mode = (0,heavy)
+[2026-05-18 10:38:23.871] [11497] [INFO] [NRSensor] MCU Initialize cmd_retry_count:300ms,cmd_retry_count_:5
+[2026-05-18 10:38:23.871] [11497] [INFO] [NRSensor] MCU before create mcu dirver,0x72956065b2c0,lidx:-1
+[2026-05-18 10:38:23.871] [11497] [INFO] [NRSensor] MCU after create mcu dirver,0x72956065b2c0,aidx:0
+[2026-05-18 10:38:23.871] [11497] [WARN] [NRSensor] MCU message_interface_.RegisterProvider is nullptr!
+[2026-05-18 10:38:23.927] [11497] [INFO] [NRSensor] MCU read_thread_id=0,0x72956065b2c0
+[2026-05-18 10:38:23.927] [11497] [INFO] [NRSensor] MCU initialized,0x72956065b2c0
+[2026-05-18 10:38:23.927] [11497] [INFO] [NRSensor] MCU starting,0x72956065b2c0
+[2026-05-18 10:38:23.927] [11497] [INFO] [NRSensor] McuDriver start device type:6
+[2026-05-18 10:38:23.927] [11497] [INFO] [NRSensor] Generic Control callback false
+[2026-05-18 10:38:23.927] [11497] [INFO] [NRSensor] MCU type = 6
+[2026-05-18 10:38:23.928] [11497] [INFO] [NRSensor] MCU sync task running
+[2026-05-18 10:38:24.067] [11497] [INFO] [NRSensor] MCU write sdk version:1.3.0 success
+[2026-05-18 10:38:24.070] [11497] [INFO] [NRSensor] MCU mcu fw software version : 19.1.00.323_20260428
+[2026-05-18 10:38:24.074] [11497] [INFO] [NRSensor] MCU protocol build date(19.1.00.323_20260428) not exist, using default protocol, which may cause some functions to not work properly
+[2026-05-18 10:38:24.084] [11497] [INFO] [NRSensor] MCU started,0x72956065b2c0
+[2026-05-18 10:38:24.084] [11497] [INFO] [NRSensor] Glasses Config initializing,0x72956065bc80
+[2026-05-18 10:38:24.084] [11497] [INFO] [NRSensor] Glasses Config device type [6]
+[2026-05-18 10:38:24.087] [11513] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 10:38:24.139] [11497] [INFO] [NRSensor] Generic Control callback false
+[2026-05-18 10:38:24.612] [11513] [WARN] [NRSensor] cmd success, but cost long time:27ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 10:38:26.209] [11497] [INFO] [NRSensor] checkFormatAndAppendVersion begin
+[2026-05-18 10:38:26.211] [11497] [INFO] [NRSensor] checkFormatAndAppendVersion middle
+[2026-05-18 10:38:26.211] [11497] [INFO] [NRSensor] checkFormatAndAppendVersion end
+[2026-05-18 10:38:26.215] [11497] [INFO] [NRSensor] Read config 55529 bytes
+[2026-05-18 10:38:26.215] [11497] [INFO] [NRSensor] glasses config size: 55529
+[2026-05-18 10:38:26.215] [11497] [INFO] [NRSensor] IMU Sensor protocol identifer = 20260323,539362083
+[2026-05-18 10:38:26.218] [11497] [INFO] [NRSensor] Glasses Config Sensor protocol 20260323 MATCHED
+[2026-05-18 10:38:26.309] [11515] [INFO] [NRSensor] Generic Control process stopped.
+[2026-05-18 10:38:26.309] [11497] [INFO] [NRSensor] hid_exit call
+[2026-05-18 10:38:26.309] [11497] [INFO] [NRSensor] hid_exit done
+[2026-05-18 10:38:26.309] [11497] [INFO] [NRSensor] Glasses Config stopping
+[2026-05-18 10:38:26.309] [11497] [INFO] [NRSensor] Glasses Config stopped
+[2026-05-18 10:38:26.385] [11497] [INFO] [NRSensor] IMU initializing,0x72956065b980
+[2026-05-18 10:38:26.385] [11497] [INFO] [NRSensor] IMU device type [6]
+[2026-05-18 10:38:26.440] [11497] [INFO] [NRSensor] IMU initialized
+[2026-05-18 10:38:26.440] [11497] [INFO] [NRSensor] IMU starting
+[2026-05-18 10:38:26.440] [11497] [INFO] [NRSensor] Generic Control callback false
+[2026-05-18 10:38:26.441] [11497] [INFO] [NRSensor] IMU started
+[2026-05-18 10:38:26.443] [11534] [INFO] [NRSensor] IMU get ack
+[2026-05-18 10:38:26.551] [11534] [INFO] [NRSensor] IMU transmitting first packet:5
+[2026-05-18 10:38:26.551] [11534] [INFO] [NRSensor] IMU Generic Protocol version : 20260323
+[2026-05-18 10:38:32.721] [11513] [WARN] [NRSensor] cmd success, but cost long time:31ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 10:38:34.093] [11513] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 10:38:36.545] [11534] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 10:38:38.618] [11513] [WARN] [NRSensor] cmd success, but cost long time:25ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 10:38:44.099] [11513] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 10:38:46.545] [11534] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 10:38:46.728] [11513] [WARN] [NRSensor] cmd success, but cost long time:30ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 10:38:48.127] [11513] [WARN] [NRSensor] cmd success, but cost long time:28ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 10:38:49.525] [11513] [WARN] [NRSensor] cmd success, but cost long time:25ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 10:38:53.618] [11510] [INFO] [NRSensor] IMU stopping
+[2026-05-18 10:38:53.618] [11510] [INFO] [NRSensor] controlImuStream stop imu begin
+[2026-05-18 10:38:53.619] [11510] [INFO] [NRSensor] Control IMU stream status(0) setProperties ret=success
+[2026-05-18 10:38:53.619] [11510] [INFO] [NRSensor] controlImuStream stop imu end,ret=success
+[2026-05-18 10:38:53.620] [11534] [INFO] [NRSensor] IMU get ack
+[2026-05-18 10:38:53.620] [11534] [INFO] [NRSensor] Generic Control process stopped.
+[2026-05-18 10:38:53.620] [11510] [INFO] [NRSensor] hid_exit call
+[2026-05-18 10:38:53.620] [11510] [INFO] [NRSensor] hid_exit done
+[2026-05-18 10:38:53.620] [11510] [INFO] [NRSensor] IMU stopped
+[2026-05-18 10:38:53.620] [11510] [INFO] [NRSensor] IMU releasing
+[2026-05-18 10:38:53.620] [11510] [INFO] [NRSensor] IMU released
+[2026-05-18 10:38:53.730] [11513] [WARN] [NRSensor] cmd success, but cost long time:28ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 10:38:53.802] [11510] [INFO] [NRSensor] MCU stopping,0x72956065b2c0
+[2026-05-18 10:38:53.830] [11512] [INFO] [NRSensor] Generic Control process stopped.
+[2026-05-18 10:38:53.830] [11510] [INFO] [NRSensor] hid_exit call
+[2026-05-18 10:38:53.830] [11510] [INFO] [NRSensor] hid_exit done
+[2026-05-18 10:38:53.830] [11510] [INFO] [NRSensor] MCU stopped,0x72956065b2c0
+[2026-05-18 10:38:53.830] [11510] [INFO] [NRSensor] MCU releasing
+[2026-05-18 10:38:53.830] [11510] [INFO] [NRSensor] MCU released
+[2026-05-18 11:00:28.838] [15546] [WARN] [NRSensor] Log Info: pid:15532, time:2026-05-18 11:00:28 (+0800), features:0
+[2026-05-18 11:00:28.838] [15546] [WARN] [NRSensor] MCU message interface is null!
+[2026-05-18 11:00:28.838] [15546] [INFO] [NRSensor] MCU initializing,0x765c1065b2c0
+[2026-05-18 11:00:28.838] [15546] [INFO] [NRSensor] MCU got invalid device type, The driver will enumerate it by itself
+[2026-05-18 11:00:28.838] [15546] [INFO] [NRSensor] MCU device type [6],new driver,work type = (0,not server),work mode = (0,heavy)
+[2026-05-18 11:00:28.838] [15546] [INFO] [NRSensor] MCU Initialize cmd_retry_count:300ms,cmd_retry_count_:5
+[2026-05-18 11:00:28.838] [15546] [INFO] [NRSensor] MCU before create mcu dirver,0x765c1065b2c0,lidx:-1
+[2026-05-18 11:00:28.838] [15546] [INFO] [NRSensor] MCU after create mcu dirver,0x765c1065b2c0,aidx:0
+[2026-05-18 11:00:28.838] [15546] [WARN] [NRSensor] MCU message_interface_.RegisterProvider is nullptr!
+[2026-05-18 11:00:28.893] [15546] [INFO] [NRSensor] MCU read_thread_id=0,0x765c1065b2c0
+[2026-05-18 11:00:28.893] [15546] [INFO] [NRSensor] MCU initialized,0x765c1065b2c0
+[2026-05-18 11:00:28.893] [15546] [INFO] [NRSensor] MCU starting,0x765c1065b2c0
+[2026-05-18 11:00:28.893] [15546] [INFO] [NRSensor] McuDriver start device type:6
+[2026-05-18 11:00:28.893] [15546] [INFO] [NRSensor] Generic Control callback false
+[2026-05-18 11:00:28.893] [15546] [INFO] [NRSensor] MCU type = 6
+[2026-05-18 11:00:28.894] [15546] [INFO] [NRSensor] MCU sync task running
+[2026-05-18 11:00:29.008] [15546] [INFO] [NRSensor] MCU write sdk version:1.3.0 success
+[2026-05-18 11:00:29.010] [15546] [INFO] [NRSensor] MCU mcu fw software version : 19.1.00.323_20260428
+[2026-05-18 11:00:29.014] [15546] [INFO] [NRSensor] MCU protocol build date(19.1.00.323_20260428) not exist, using default protocol, which may cause some functions to not work properly
+[2026-05-18 11:00:29.024] [15546] [INFO] [NRSensor] MCU started,0x765c1065b2c0
+[2026-05-18 11:00:29.024] [15546] [INFO] [NRSensor] Glasses Config initializing,0x765c1065bc80
+[2026-05-18 11:00:29.024] [15546] [INFO] [NRSensor] Glasses Config device type [6]
+[2026-05-18 11:00:29.026] [15562] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:00:29.079] [15546] [INFO] [NRSensor] Generic Control callback false
+[2026-05-18 11:00:31.034] [15546] [INFO] [NRSensor] checkFormatAndAppendVersion begin
+[2026-05-18 11:00:31.036] [15546] [INFO] [NRSensor] checkFormatAndAppendVersion middle
+[2026-05-18 11:00:31.036] [15546] [INFO] [NRSensor] checkFormatAndAppendVersion end
+[2026-05-18 11:00:31.037] [15546] [INFO] [NRSensor] Read config 55529 bytes
+[2026-05-18 11:00:31.037] [15546] [INFO] [NRSensor] glasses config size: 55529
+[2026-05-18 11:00:31.037] [15546] [INFO] [NRSensor] IMU Sensor protocol identifer = 20260323,539362083
+[2026-05-18 11:00:31.040] [15546] [INFO] [NRSensor] Glasses Config Sensor protocol 20260323 MATCHED
+[2026-05-18 11:00:31.134] [15563] [INFO] [NRSensor] Generic Control process stopped.
+[2026-05-18 11:00:31.134] [15546] [INFO] [NRSensor] hid_exit call
+[2026-05-18 11:00:31.134] [15546] [INFO] [NRSensor] hid_exit done
+[2026-05-18 11:00:31.134] [15546] [INFO] [NRSensor] Glasses Config stopping
+[2026-05-18 11:00:31.134] [15546] [INFO] [NRSensor] Glasses Config stopped
+[2026-05-18 11:00:32.326] [15546] [INFO] [NRSensor] MCU stopping,0x765c1065b2c0
+[2026-05-18 11:00:32.328] [15561] [INFO] [NRSensor] Generic Control process stopped.
+[2026-05-18 11:00:32.328] [15546] [INFO] [NRSensor] hid_exit call
+[2026-05-18 11:00:32.328] [15546] [INFO] [NRSensor] hid_exit done
+[2026-05-18 11:00:32.328] [15546] [INFO] [NRSensor] MCU stopped,0x765c1065b2c0
+[2026-05-18 11:00:32.328] [15546] [INFO] [NRSensor] MCU releasing
+[2026-05-18 11:00:32.328] [15546] [INFO] [NRSensor] MCU released
+[2026-05-18 11:03:45.031] [20060] [WARN] [NRSensor] Log Info: pid:20046, time:2026-05-18 11:03:45 (+0800), features:0
+[2026-05-18 11:03:45.031] [20060] [WARN] [NRSensor] MCU message interface is null!
+[2026-05-18 11:03:45.031] [20060] [INFO] [NRSensor] MCU initializing,0x71a08065b2c0
+[2026-05-18 11:03:45.031] [20060] [INFO] [NRSensor] MCU got invalid device type, The driver will enumerate it by itself
+[2026-05-18 11:03:45.031] [20060] [INFO] [NRSensor] MCU device type [6],new driver,work type = (0,not server),work mode = (0,heavy)
+[2026-05-18 11:03:45.031] [20060] [INFO] [NRSensor] MCU Initialize cmd_retry_count:300ms,cmd_retry_count_:5
+[2026-05-18 11:03:45.031] [20060] [INFO] [NRSensor] MCU before create mcu dirver,0x71a08065b2c0,lidx:-1
+[2026-05-18 11:03:45.031] [20060] [INFO] [NRSensor] MCU after create mcu dirver,0x71a08065b2c0,aidx:0
+[2026-05-18 11:03:45.031] [20060] [WARN] [NRSensor] MCU message_interface_.RegisterProvider is nullptr!
+[2026-05-18 11:03:45.085] [20060] [INFO] [NRSensor] MCU read_thread_id=0,0x71a08065b2c0
+[2026-05-18 11:03:45.085] [20060] [INFO] [NRSensor] MCU initialized,0x71a08065b2c0
+[2026-05-18 11:03:45.085] [20060] [INFO] [NRSensor] MCU starting,0x71a08065b2c0
+[2026-05-18 11:03:45.085] [20060] [INFO] [NRSensor] McuDriver start device type:6
+[2026-05-18 11:03:45.085] [20060] [INFO] [NRSensor] Generic Control callback false
+[2026-05-18 11:03:45.085] [20060] [INFO] [NRSensor] MCU type = 6
+[2026-05-18 11:03:45.086] [20060] [INFO] [NRSensor] MCU sync task running
+[2026-05-18 11:03:45.199] [20060] [INFO] [NRSensor] MCU write sdk version:1.3.0 success
+[2026-05-18 11:03:45.201] [20060] [INFO] [NRSensor] MCU mcu fw software version : 19.1.00.323_20260428
+[2026-05-18 11:03:45.203] [20060] [INFO] [NRSensor] MCU protocol build date(19.1.00.323_20260428) not exist, using default protocol, which may cause some functions to not work properly
+[2026-05-18 11:03:45.212] [20060] [INFO] [NRSensor] MCU started,0x71a08065b2c0
+[2026-05-18 11:03:45.213] [20060] [INFO] [NRSensor] Glasses Config initializing,0x71a08065bc80
+[2026-05-18 11:03:45.213] [20060] [INFO] [NRSensor] Glasses Config device type [6]
+[2026-05-18 11:03:45.214] [20076] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:03:45.268] [20060] [INFO] [NRSensor] Generic Control callback false
+[2026-05-18 11:03:47.223] [20060] [INFO] [NRSensor] checkFormatAndAppendVersion begin
+[2026-05-18 11:03:47.225] [20060] [INFO] [NRSensor] checkFormatAndAppendVersion middle
+[2026-05-18 11:03:47.225] [20060] [INFO] [NRSensor] checkFormatAndAppendVersion end
+[2026-05-18 11:03:47.227] [20060] [INFO] [NRSensor] Read config 55529 bytes
+[2026-05-18 11:03:47.227] [20060] [INFO] [NRSensor] glasses config size: 55529
+[2026-05-18 11:03:47.227] [20060] [INFO] [NRSensor] IMU Sensor protocol identifer = 20260323,539362083
+[2026-05-18 11:03:47.230] [20060] [INFO] [NRSensor] Glasses Config Sensor protocol 20260323 MATCHED
+[2026-05-18 11:03:47.324] [20077] [INFO] [NRSensor] Generic Control process stopped.
+[2026-05-18 11:03:47.324] [20060] [INFO] [NRSensor] hid_exit call
+[2026-05-18 11:03:47.324] [20060] [INFO] [NRSensor] hid_exit done
+[2026-05-18 11:03:47.324] [20060] [INFO] [NRSensor] Glasses Config stopping
+[2026-05-18 11:03:47.324] [20060] [INFO] [NRSensor] Glasses Config stopped
+[2026-05-18 11:03:47.365] [20060] [INFO] [NRSensor] IMU initializing,0x71a08065b980
+[2026-05-18 11:03:47.365] [20060] [INFO] [NRSensor] IMU device type [6]
+[2026-05-18 11:03:47.421] [20060] [INFO] [NRSensor] IMU initialized
+[2026-05-18 11:03:47.421] [20060] [INFO] [NRSensor] IMU starting
+[2026-05-18 11:03:47.421] [20060] [INFO] [NRSensor] Generic Control callback false
+[2026-05-18 11:03:47.422] [20060] [INFO] [NRSensor] IMU started
+[2026-05-18 11:03:47.424] [20110] [INFO] [NRSensor] IMU get ack
+[2026-05-18 11:03:47.532] [20110] [INFO] [NRSensor] IMU transmitting first packet:5
+[2026-05-18 11:03:47.532] [20110] [INFO] [NRSensor] IMU Generic Protocol version : 20260323
+[2026-05-18 11:03:55.221] [20076] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:03:57.526] [20110] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 11:04:05.226] [20076] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:04:07.527] [20110] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 11:04:12.360] [20076] [WARN] [NRSensor] cmd success, but cost long time:31ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:04:13.758] [20076] [WARN] [NRSensor] cmd success, but cost long time:28ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:04:15.156] [20076] [WARN] [NRSensor] cmd success, but cost long time:25ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:04:15.232] [20076] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:04:17.528] [20110] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 11:04:20.765] [20076] [WARN] [NRSensor] cmd success, but cost long time:31ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:04:22.164] [20076] [WARN] [NRSensor] cmd success, but cost long time:29ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:04:23.564] [20076] [WARN] [NRSensor] cmd success, but cost long time:28ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:04:24.962] [20076] [WARN] [NRSensor] cmd success, but cost long time:25ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:04:25.242] [20076] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:04:27.530] [20110] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 11:04:29.165] [20076] [WARN] [NRSensor] cmd success, but cost long time:26ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:04:35.244] [20076] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:04:37.530] [20110] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 11:04:38.674] [20076] [WARN] [NRSensor] cmd success, but cost long time:29ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:04:40.073] [20076] [WARN] [NRSensor] cmd success, but cost long time:27ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:04:41.472] [20076] [WARN] [NRSensor] cmd success, but cost long time:25ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:04:45.251] [20076] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:04:47.081] [20076] [WARN] [NRSensor] cmd success, but cost long time:31ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:04:47.531] [20110] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 11:04:48.489] [20076] [WARN] [NRSensor] cmd success, but cost long time:39ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:04:51.582] [20076] [WARN] [NRSensor] cmd success, but cost long time:29ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:04:52.980] [20076] [WARN] [NRSensor] cmd success, but cost long time:26ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:04:55.256] [20076] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:04:55.880] [20073] [INFO] [NRSensor] IMU stopping
+[2026-05-18 11:04:55.880] [20073] [INFO] [NRSensor] controlImuStream stop imu begin
+[2026-05-18 11:04:55.881] [20073] [INFO] [NRSensor] Control IMU stream status(0) setProperties ret=success
+[2026-05-18 11:04:55.881] [20073] [INFO] [NRSensor] controlImuStream stop imu end,ret=success
+[2026-05-18 11:04:55.882] [20110] [INFO] [NRSensor] IMU get ack
+[2026-05-18 11:04:55.882] [20110] [INFO] [NRSensor] Generic Control process stopped.
+[2026-05-18 11:04:55.882] [20073] [INFO] [NRSensor] hid_exit call
+[2026-05-18 11:04:55.882] [20073] [INFO] [NRSensor] hid_exit done
+[2026-05-18 11:04:55.882] [20073] [INFO] [NRSensor] IMU stopped
+[2026-05-18 11:04:55.882] [20073] [INFO] [NRSensor] IMU releasing
+[2026-05-18 11:04:55.882] [20073] [INFO] [NRSensor] IMU released
+[2026-05-18 11:04:56.054] [20073] [INFO] [NRSensor] MCU stopping,0x71a08065b2c0
+[2026-05-18 11:04:56.057] [20075] [INFO] [NRSensor] Generic Control process stopped.
+[2026-05-18 11:04:56.057] [20073] [INFO] [NRSensor] hid_exit call
+[2026-05-18 11:04:56.057] [20073] [INFO] [NRSensor] hid_exit done
+[2026-05-18 11:04:56.057] [20073] [INFO] [NRSensor] MCU stopped,0x71a08065b2c0
+[2026-05-18 11:04:56.057] [20073] [INFO] [NRSensor] MCU releasing
+[2026-05-18 11:04:56.057] [20073] [INFO] [NRSensor] MCU released
+[2026-05-18 11:06:52.707] [21421] [WARN] [NRSensor] Log Info: pid:21407, time:2026-05-18 11:06:52 (+0800), features:0
+[2026-05-18 11:06:52.707] [21421] [WARN] [NRSensor] MCU message interface is null!
+[2026-05-18 11:06:52.707] [21421] [INFO] [NRSensor] MCU initializing,0x7acecc65b2c0
+[2026-05-18 11:06:52.707] [21421] [INFO] [NRSensor] MCU got invalid device type, The driver will enumerate it by itself
+[2026-05-18 11:06:52.707] [21421] [INFO] [NRSensor] MCU device type [6],new driver,work type = (0,not server),work mode = (0,heavy)
+[2026-05-18 11:06:52.707] [21421] [INFO] [NRSensor] MCU Initialize cmd_retry_count:300ms,cmd_retry_count_:5
+[2026-05-18 11:06:52.707] [21421] [INFO] [NRSensor] MCU before create mcu dirver,0x7acecc65b2c0,lidx:-1
+[2026-05-18 11:06:52.707] [21421] [INFO] [NRSensor] MCU after create mcu dirver,0x7acecc65b2c0,aidx:0
+[2026-05-18 11:06:52.707] [21421] [WARN] [NRSensor] MCU message_interface_.RegisterProvider is nullptr!
+[2026-05-18 11:06:52.762] [21421] [INFO] [NRSensor] MCU read_thread_id=0,0x7acecc65b2c0
+[2026-05-18 11:06:52.762] [21421] [INFO] [NRSensor] MCU initialized,0x7acecc65b2c0
+[2026-05-18 11:06:52.762] [21421] [INFO] [NRSensor] MCU starting,0x7acecc65b2c0
+[2026-05-18 11:06:52.762] [21421] [INFO] [NRSensor] McuDriver start device type:6
+[2026-05-18 11:06:52.762] [21421] [INFO] [NRSensor] Generic Control callback false
+[2026-05-18 11:06:52.762] [21421] [INFO] [NRSensor] MCU type = 6
+[2026-05-18 11:06:52.764] [21421] [INFO] [NRSensor] MCU sync task running
+[2026-05-18 11:06:52.877] [21421] [INFO] [NRSensor] MCU write sdk version:1.3.0 success
+[2026-05-18 11:06:52.880] [21421] [INFO] [NRSensor] MCU mcu fw software version : 19.1.00.323_20260428
+[2026-05-18 11:06:52.883] [21421] [INFO] [NRSensor] MCU protocol build date(19.1.00.323_20260428) not exist, using default protocol, which may cause some functions to not work properly
+[2026-05-18 11:06:52.893] [21421] [INFO] [NRSensor] MCU started,0x7acecc65b2c0
+[2026-05-18 11:06:52.893] [21421] [INFO] [NRSensor] Glasses Config initializing,0x7acecc65bc80
+[2026-05-18 11:06:52.893] [21421] [INFO] [NRSensor] Glasses Config device type [6]
+[2026-05-18 11:06:52.896] [21437] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:06:52.947] [21421] [INFO] [NRSensor] Generic Control callback false
+[2026-05-18 11:06:53.423] [21437] [WARN] [NRSensor] cmd success, but cost long time:29ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:06:54.820] [21437] [WARN] [NRSensor] cmd success, but cost long time:25ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:06:55.301] [21421] [INFO] [NRSensor] checkFormatAndAppendVersion begin
+[2026-05-18 11:06:55.303] [21421] [INFO] [NRSensor] checkFormatAndAppendVersion middle
+[2026-05-18 11:06:55.303] [21421] [INFO] [NRSensor] checkFormatAndAppendVersion end
+[2026-05-18 11:06:55.304] [21421] [INFO] [NRSensor] Read config 55529 bytes
+[2026-05-18 11:06:55.304] [21421] [INFO] [NRSensor] glasses config size: 55529
+[2026-05-18 11:06:55.304] [21421] [INFO] [NRSensor] IMU Sensor protocol identifer = 20260323,539362083
+[2026-05-18 11:06:55.307] [21421] [INFO] [NRSensor] Glasses Config Sensor protocol 20260323 MATCHED
+[2026-05-18 11:06:55.401] [21438] [INFO] [NRSensor] Generic Control process stopped.
+[2026-05-18 11:06:55.401] [21421] [INFO] [NRSensor] hid_exit call
+[2026-05-18 11:06:55.401] [21421] [INFO] [NRSensor] hid_exit done
+[2026-05-18 11:06:55.401] [21421] [INFO] [NRSensor] Glasses Config stopping
+[2026-05-18 11:06:55.401] [21421] [INFO] [NRSensor] Glasses Config stopped
+[2026-05-18 11:06:55.442] [21421] [INFO] [NRSensor] IMU initializing,0x7acecc65b980
+[2026-05-18 11:06:55.442] [21421] [INFO] [NRSensor] IMU device type [6]
+[2026-05-18 11:06:55.497] [21421] [INFO] [NRSensor] IMU initialized
+[2026-05-18 11:06:55.497] [21421] [INFO] [NRSensor] IMU starting
+[2026-05-18 11:06:55.497] [21421] [INFO] [NRSensor] Generic Control callback false
+[2026-05-18 11:06:55.497] [21421] [INFO] [NRSensor] IMU started
+[2026-05-18 11:06:55.498] [21444] [INFO] [NRSensor] IMU get ack
+[2026-05-18 11:06:55.606] [21444] [INFO] [NRSensor] IMU transmitting first packet:5
+[2026-05-18 11:06:55.606] [21444] [INFO] [NRSensor] IMU Generic Protocol version : 20260323
+[2026-05-18 11:06:56.527] [21437] [WARN] [NRSensor] cmd success, but cost long time:31ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:06:58.823] [21437] [WARN] [NRSensor] cmd success, but cost long time:26ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:07:01.932] [21437] [WARN] [NRSensor] cmd success, but cost long time:33ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:07:02.901] [21437] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:07:05.035] [21437] [WARN] [NRSensor] cmd success, but cost long time:34ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:07:05.601] [21444] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 11:07:08.130] [21437] [WARN] [NRSensor] cmd success, but cost long time:27ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:07:12.636] [21437] [WARN] [NRSensor] cmd success, but cost long time:30ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:07:12.916] [21437] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:07:15.601] [21444] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 11:07:22.441] [21437] [WARN] [NRSensor] cmd success, but cost long time:30ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:07:22.913] [21437] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:07:23.840] [21437] [WARN] [NRSensor] cmd success, but cost long time:28ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:07:25.601] [21444] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 11:07:32.920] [21437] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:07:35.602] [21444] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 11:07:36.450] [21437] [WARN] [NRSensor] cmd success, but cost long time:30ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:07:37.848] [21437] [WARN] [NRSensor] cmd success, but cost long time:28ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:07:39.247] [21437] [WARN] [NRSensor] cmd success, but cost long time:26ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:07:42.926] [21437] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:07:45.602] [21444] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 11:07:47.357] [21437] [WARN] [NRSensor] cmd success, but cost long time:31ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:07:48.755] [21437] [WARN] [NRSensor] cmd success, but cost long time:28ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:07:51.857] [21437] [WARN] [NRSensor] cmd success, but cost long time:29ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:07:52.930] [21437] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:07:53.256] [21437] [WARN] [NRSensor] cmd success, but cost long time:27ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:07:54.655] [21437] [WARN] [NRSensor] cmd success, but cost long time:25ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:07:55.603] [21444] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 11:08:02.766] [21437] [WARN] [NRSensor] cmd success, but cost long time:30ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:08:02.937] [21437] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:08:04.164] [21437] [WARN] [NRSensor] cmd success, but cost long time:28ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:08:05.563] [21437] [WARN] [NRSensor] cmd success, but cost long time:26ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:08:05.604] [21444] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 11:09:56.862] [23564] [WARN] [NRSensor] Log Info: pid:23550, time:2026-05-18 11:09:56 (+0800), features:0
+[2026-05-18 11:09:56.862] [23564] [WARN] [NRSensor] MCU message interface is null!
+[2026-05-18 11:09:56.862] [23564] [INFO] [NRSensor] MCU initializing,0x7c9d6c65b2c0
+[2026-05-18 11:09:56.862] [23564] [INFO] [NRSensor] MCU got invalid device type, The driver will enumerate it by itself
+[2026-05-18 11:09:56.862] [23564] [INFO] [NRSensor] MCU device type [6],new driver,work type = (0,not server),work mode = (0,heavy)
+[2026-05-18 11:09:56.862] [23564] [INFO] [NRSensor] MCU Initialize cmd_retry_count:300ms,cmd_retry_count_:5
+[2026-05-18 11:09:56.862] [23564] [INFO] [NRSensor] MCU before create mcu dirver,0x7c9d6c65b2c0,lidx:-1
+[2026-05-18 11:09:56.862] [23564] [INFO] [NRSensor] MCU after create mcu dirver,0x7c9d6c65b2c0,aidx:0
+[2026-05-18 11:09:56.862] [23564] [WARN] [NRSensor] MCU message_interface_.RegisterProvider is nullptr!
+[2026-05-18 11:09:56.916] [23564] [INFO] [NRSensor] MCU read_thread_id=0,0x7c9d6c65b2c0
+[2026-05-18 11:09:56.916] [23564] [INFO] [NRSensor] MCU initialized,0x7c9d6c65b2c0
+[2026-05-18 11:09:56.916] [23564] [INFO] [NRSensor] MCU starting,0x7c9d6c65b2c0
+[2026-05-18 11:09:56.916] [23564] [INFO] [NRSensor] McuDriver start device type:6
+[2026-05-18 11:09:56.916] [23564] [INFO] [NRSensor] Generic Control callback false
+[2026-05-18 11:09:56.916] [23564] [INFO] [NRSensor] MCU type = 6
+[2026-05-18 11:09:56.917] [23564] [INFO] [NRSensor] MCU sync task running
+[2026-05-18 11:09:57.031] [23564] [INFO] [NRSensor] MCU write sdk version:1.3.0 success
+[2026-05-18 11:09:57.033] [23564] [INFO] [NRSensor] MCU mcu fw software version : 19.1.00.323_20260428
+[2026-05-18 11:09:57.037] [23564] [INFO] [NRSensor] MCU protocol build date(19.1.00.323_20260428) not exist, using default protocol, which may cause some functions to not work properly
+[2026-05-18 11:09:57.047] [23564] [INFO] [NRSensor] MCU started,0x7c9d6c65b2c0
+[2026-05-18 11:09:57.047] [23564] [INFO] [NRSensor] Glasses Config initializing,0x7c9d6c65bc80
+[2026-05-18 11:09:57.047] [23564] [INFO] [NRSensor] Glasses Config device type [6]
+[2026-05-18 11:09:57.049] [23580] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:09:57.101] [23564] [INFO] [NRSensor] Generic Control callback false
+[2026-05-18 11:09:59.055] [23564] [INFO] [NRSensor] checkFormatAndAppendVersion begin
+[2026-05-18 11:09:59.056] [23564] [INFO] [NRSensor] checkFormatAndAppendVersion middle
+[2026-05-18 11:09:59.056] [23564] [INFO] [NRSensor] checkFormatAndAppendVersion end
+[2026-05-18 11:09:59.058] [23564] [INFO] [NRSensor] Read config 55529 bytes
+[2026-05-18 11:09:59.058] [23564] [INFO] [NRSensor] glasses config size: 55529
+[2026-05-18 11:09:59.058] [23564] [INFO] [NRSensor] IMU Sensor protocol identifer = 20260323,539362083
+[2026-05-18 11:09:59.061] [23564] [INFO] [NRSensor] Glasses Config Sensor protocol 20260323 MATCHED
+[2026-05-18 11:09:59.155] [23581] [INFO] [NRSensor] Generic Control process stopped.
+[2026-05-18 11:09:59.155] [23564] [INFO] [NRSensor] hid_exit call
+[2026-05-18 11:09:59.155] [23564] [INFO] [NRSensor] hid_exit done
+[2026-05-18 11:09:59.155] [23564] [INFO] [NRSensor] Glasses Config stopping
+[2026-05-18 11:09:59.155] [23564] [INFO] [NRSensor] Glasses Config stopped
+[2026-05-18 11:09:59.194] [23564] [INFO] [NRSensor] IMU initializing,0x7c9d6c65b980
+[2026-05-18 11:09:59.194] [23564] [INFO] [NRSensor] IMU device type [6]
+[2026-05-18 11:09:59.250] [23564] [INFO] [NRSensor] IMU initialized
+[2026-05-18 11:09:59.250] [23564] [INFO] [NRSensor] IMU starting
+[2026-05-18 11:09:59.250] [23564] [INFO] [NRSensor] Generic Control callback false
+[2026-05-18 11:09:59.251] [23564] [INFO] [NRSensor] IMU started
+[2026-05-18 11:09:59.252] [23584] [INFO] [NRSensor] IMU get ack
+[2026-05-18 11:09:59.361] [23584] [INFO] [NRSensor] IMU transmitting first packet:5
+[2026-05-18 11:09:59.361] [23584] [INFO] [NRSensor] IMU Generic Protocol version : 20260323
+[2026-05-18 11:10:07.055] [23580] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:10:09.355] [23584] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 11:10:17.061] [23580] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:10:19.355] [23584] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 11:10:20.695] [23580] [WARN] [NRSensor] cmd success, but cost long time:33ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:10:27.068] [23580] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:10:29.480] [23584] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 11:10:37.073] [23580] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:10:39.480] [23584] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 11:10:47.080] [23580] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:10:49.489] [23584] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 11:10:56.615] [23580] [WARN] [NRSensor] cmd success, but cost long time:31ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:10:57.086] [23580] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:10:58.013] [23580] [WARN] [NRSensor] cmd success, but cost long time:28ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:10:59.411] [23580] [WARN] [NRSensor] cmd success, but cost long time:25ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:10:59.503] [23584] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 11:11:07.093] [23580] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:11:08.921] [23580] [WARN] [NRSensor] cmd success, but cost long time:29ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:11:09.517] [23584] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 11:11:13.124] [23580] [WARN] [NRSensor] cmd success, but cost long time:30ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:11:14.522] [23580] [WARN] [NRSensor] cmd success, but cost long time:27ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:11:17.097] [23580] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:11:17.625] [23580] [WARN] [NRSensor] cmd success, but cost long time:29ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:11:19.539] [23584] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 11:11:22.729] [23580] [WARN] [NRSensor] cmd success, but cost long time:30ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:23:49.309] [26106] [WARN] [NRSensor] Log Info: pid:26092, time:2026-05-18 11:23:49 (+0800), features:0
+[2026-05-18 11:23:49.309] [26106] [WARN] [NRSensor] MCU message interface is null!
+[2026-05-18 11:23:49.309] [26106] [INFO] [NRSensor] MCU initializing,0x71591865b2c0
+[2026-05-18 11:23:49.309] [26106] [INFO] [NRSensor] MCU got invalid device type, The driver will enumerate it by itself
+[2026-05-18 11:23:49.309] [26106] [INFO] [NRSensor] MCU device type [6],new driver,work type = (0,not server),work mode = (0,heavy)
+[2026-05-18 11:23:49.309] [26106] [INFO] [NRSensor] MCU Initialize cmd_retry_count:300ms,cmd_retry_count_:5
+[2026-05-18 11:23:49.309] [26106] [INFO] [NRSensor] MCU before create mcu dirver,0x71591865b2c0,lidx:-1
+[2026-05-18 11:23:49.309] [26106] [INFO] [NRSensor] MCU after create mcu dirver,0x71591865b2c0,aidx:0
+[2026-05-18 11:23:49.309] [26106] [WARN] [NRSensor] MCU message_interface_.RegisterProvider is nullptr!
+[2026-05-18 11:23:49.365] [26106] [INFO] [NRSensor] MCU read_thread_id=0,0x71591865b2c0
+[2026-05-18 11:23:49.365] [26106] [INFO] [NRSensor] MCU initialized,0x71591865b2c0
+[2026-05-18 11:23:49.365] [26106] [INFO] [NRSensor] MCU starting,0x71591865b2c0
+[2026-05-18 11:23:49.365] [26106] [INFO] [NRSensor] McuDriver start device type:6
+[2026-05-18 11:23:49.365] [26106] [INFO] [NRSensor] Generic Control callback false
+[2026-05-18 11:23:49.365] [26106] [INFO] [NRSensor] MCU type = 6
+[2026-05-18 11:23:49.367] [26106] [INFO] [NRSensor] MCU sync task running
+[2026-05-18 11:23:49.480] [26106] [INFO] [NRSensor] MCU write sdk version:1.3.0 success
+[2026-05-18 11:23:49.483] [26106] [INFO] [NRSensor] MCU mcu fw software version : 19.1.00.323_20260428
+[2026-05-18 11:23:49.487] [26106] [INFO] [NRSensor] MCU protocol build date(19.1.00.323_20260428) not exist, using default protocol, which may cause some functions to not work properly
+[2026-05-18 11:23:49.498] [26106] [INFO] [NRSensor] MCU started,0x71591865b2c0
+[2026-05-18 11:23:49.498] [26106] [INFO] [NRSensor] Glasses Config initializing,0x71591865bc80
+[2026-05-18 11:23:49.498] [26106] [INFO] [NRSensor] Glasses Config device type [6]
+[2026-05-18 11:23:49.501] [26123] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:23:49.554] [26106] [INFO] [NRSensor] Generic Control callback false
+[2026-05-18 11:23:51.508] [26106] [INFO] [NRSensor] checkFormatAndAppendVersion begin
+[2026-05-18 11:23:51.510] [26106] [INFO] [NRSensor] checkFormatAndAppendVersion middle
+[2026-05-18 11:23:51.510] [26106] [INFO] [NRSensor] checkFormatAndAppendVersion end
+[2026-05-18 11:23:51.511] [26106] [INFO] [NRSensor] Read config 55529 bytes
+[2026-05-18 11:23:51.511] [26106] [INFO] [NRSensor] glasses config size: 55529
+[2026-05-18 11:23:51.511] [26106] [INFO] [NRSensor] IMU Sensor protocol identifer = 20260323,539362083
+[2026-05-18 11:23:51.514] [26106] [INFO] [NRSensor] Glasses Config Sensor protocol 20260323 MATCHED
+[2026-05-18 11:23:51.608] [26124] [INFO] [NRSensor] Generic Control process stopped.
+[2026-05-18 11:23:51.608] [26106] [INFO] [NRSensor] hid_exit call
+[2026-05-18 11:23:51.608] [26106] [INFO] [NRSensor] hid_exit done
+[2026-05-18 11:23:51.608] [26106] [INFO] [NRSensor] Glasses Config stopping
+[2026-05-18 11:23:51.608] [26106] [INFO] [NRSensor] Glasses Config stopped
+[2026-05-18 11:23:51.644] [26106] [INFO] [NRSensor] IMU initializing,0x71591865b980
+[2026-05-18 11:23:51.644] [26106] [INFO] [NRSensor] IMU device type [6]
+[2026-05-18 11:23:51.699] [26106] [INFO] [NRSensor] IMU initialized
+[2026-05-18 11:23:51.699] [26106] [INFO] [NRSensor] IMU starting
+[2026-05-18 11:23:51.699] [26106] [INFO] [NRSensor] Generic Control callback false
+[2026-05-18 11:23:51.700] [26106] [INFO] [NRSensor] IMU started
+[2026-05-18 11:23:51.701] [26127] [INFO] [NRSensor] IMU get ack
+[2026-05-18 11:23:51.810] [26127] [INFO] [NRSensor] IMU transmitting first packet:5
+[2026-05-18 11:23:51.810] [26127] [INFO] [NRSensor] IMU Generic Protocol version : 20260323
+[2026-05-18 11:23:59.506] [26123] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:24:01.804] [26127] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 11:24:09.512] [26123] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:24:11.803] [26127] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 11:24:19.519] [26123] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:24:21.803] [26127] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 11:24:29.525] [26123] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:24:31.803] [26127] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 11:24:39.530] [26123] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:24:41.804] [26127] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 11:24:45.161] [26123] [WARN] [NRSensor] cmd success, but cost long time:30ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:24:46.560] [26123] [WARN] [NRSensor] cmd success, but cost long time:28ms,cmd:37, wait_timeout_ms:50ms
+[2026-05-18 11:24:49.535] [26123] [INFO] [NRSensor] Glasses heartbeat, response status true
+[2026-05-18 11:24:51.803] [26127] [INFO] [NRSensor] IMU transmitting data
+[2026-05-18 11:24:55.730] [26119] [INFO] [NRSensor] IMU stopping
+[2026-05-18 11:24:55.730] [26119] [INFO] [NRSensor] controlImuStream stop imu begin
+[2026-05-18 11:24:55.731] [26119] [INFO] [NRSensor] Control IMU stream status(0) setProperties ret=success
+[2026-05-18 11:24:55.731] [26119] [INFO] [NRSensor] controlImuStream stop imu end,ret=success
+[2026-05-18 11:24:55.732] [26127] [INFO] [NRSensor] Generic Control process stopped.
+[2026-05-18 11:24:55.732] [26119] [INFO] [NRSensor] hid_exit call
+[2026-05-18 11:24:55.732] [26119] [INFO] [NRSensor] hid_exit done
+[2026-05-18 11:24:55.732] [26119] [INFO] [NRSensor] IMU stopped
+[2026-05-18 11:24:55.732] [26119] [INFO] [NRSensor] IMU releasing
+[2026-05-18 11:24:55.732] [26119] [INFO] [NRSensor] IMU released
+[2026-05-18 11:24:55.838] [26119] [INFO] [NRSensor] MCU stopping,0x71591865b2c0
+[2026-05-18 11:24:55.839] [26122] [INFO] [NRSensor] Generic Control process stopped.
+[2026-05-18 11:24:55.839] [26119] [INFO] [NRSensor] hid_exit call
+[2026-05-18 11:24:55.839] [26119] [INFO] [NRSensor] hid_exit done
+[2026-05-18 11:24:55.839] [26119] [INFO] [NRSensor] MCU stopped,0x71591865b2c0
+[2026-05-18 11:24:55.839] [26119] [INFO] [NRSensor] MCU releasing
+[2026-05-18 11:24:55.839] [26119] [INFO] [NRSensor] MCU released

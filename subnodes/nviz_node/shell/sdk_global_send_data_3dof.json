@@ -1,0 +1,5 @@
+{
+    "SendTcpData": 1,
+    "ParamSaveDir": "/usrdata/3dof_param/",
+    "HostIP": "169.254.1.10"
+}

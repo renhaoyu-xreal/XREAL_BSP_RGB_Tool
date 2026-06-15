@@ -1,0 +1,12 @@
+#!/bin/sh -e
+export PATH=$PATH:/usr/usrdata/bin/runit
+
+echo "Run Pilot service."
+wait4prop ro.bsp.app_prepare_done
+echo "Wait app_prepare done success."
+
+exec 1>/dev/null 2>&1
+cd /usrdata/pilot/bin
+PILOT_VERSION=`cat /usrdata/pilot/pilot_version.txt`
+setprop ro.pilot.pilot_version $PILOT_VERSION
+#exec /usrdata/pilot/bin/pilot
