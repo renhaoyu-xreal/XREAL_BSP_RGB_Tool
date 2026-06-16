@@ -1,5 +1,5 @@
 {
-  "version": "v1.0.3",
+  "version": "v1.0.1",
   "update_info": "1. 启动软件后默认由 watchdog 自动连接、启动并恢复 RGB，无需再手动点击\"一键启动 RGB\"。\n2. 执行 RAW 抓取或相关录制脚本时，watchdog 会暂时暂停检查，避免和脚本内部的重启恢复流程冲突。\n3. 运行态信息改为按需刷新，成功状态不再重复写入 UI 日志。",
   "usb_product_catalog": [
     {

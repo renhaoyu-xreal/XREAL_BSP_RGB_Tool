@@ -56,7 +56,7 @@ QScrollArea* makeResponsivePageContainer(QWidget* page, QWidget* parent)
 
 QString loadConfiguredVersion(const recordlab::core::AppContext& context)
 {
-    const QString fallback = QStringLiteral("v1.0.0");
+    const QString fallback = QStringLiteral("v1.0.1");
     const auto version = context.recordLabConfig().version.trimmed();
     return version.isEmpty() ? fallback : version;
 }
