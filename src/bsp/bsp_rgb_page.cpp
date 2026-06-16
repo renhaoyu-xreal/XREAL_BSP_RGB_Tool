@@ -23,7 +23,6 @@
 #include <QResizeEvent>
 #include <QScrollArea>
 #include <QSplitter>
-#include <QTimer>
 #include <QTreeView>
 #include <QUrl>
 #include <QVBoxLayout>
@@ -272,13 +271,6 @@ BspRgbPage::BspRgbPage(const recordlab::core::AppContext &context,
   bottomSplitter->setSizes({650, 550});
   rootLayout->addWidget(bottomSplitter, 1);
 
-  runtimeRefreshTimer_ = new QTimer(this);
-  runtimeRefreshTimer_->setInterval(1500);
-  connect(runtimeRefreshTimer_, &QTimer::timeout, this,
-          [this]() { requestRuntimeState(false); });
-
-  connect(oneClickRgbButton_, &QPushButton::clicked, this,
-          &BspRgbPage::startRgbOneClick);
   connect(runScriptButton_, &QPushButton::clicked, this,
           &BspRgbPage::runSelectedScript);
   connect(stopScriptButton_, &QPushButton::clicked, this,
@@ -291,6 +283,7 @@ BspRgbPage::BspRgbPage(const recordlab::core::AppContext &context,
           &recordlab::flowagent::core::ScriptExecutor::scriptStarted, this,
           [this](const QString &scriptPath) {
             scriptRunning_ = true;
+            emit scriptExecutionStateChanged(true);
             clearWorkflowPanel();
             refreshScriptButtons();
             appendLog(QStringLiteral("脚本已启动: %1").arg(scriptPath));
@@ -302,6 +295,7 @@ BspRgbPage::BspRgbPage(const recordlab::core::AppContext &context,
           &recordlab::flowagent::core::ScriptExecutor::scriptCompleted, this,
           [this](bool success, const QString &error) {
             scriptRunning_ = false;
+            emit scriptExecutionStateChanged(false);
             refreshScriptButtons();
             appendLog(success ? QStringLiteral("脚本执行完成")
                               : QStringLiteral("脚本结束: %1").arg(error));
@@ -327,6 +321,15 @@ BspRgbPage::BspRgbPage(const recordlab::core::AppContext &context,
           &recordlab::workflow::WorkflowController::activeAgentDeviceInfoChanged,
           this, [this](const QString &, const QString &) {
             syncScriptExecutorDeviceInfo();
+          });
+  connect(controller_,
+          &recordlab::workflow::WorkflowController::activeAgentWatchdogStateChanged,
+          this, [this](const QString &state) {
+            if (state == QStringLiteral("healthy") && pageActive_) {
+              requestRuntimeState(true);
+            } else if (state != QStringLiteral("healthy")) {
+              runtimeRequestPending_ = false;
+            }
           });
 
   loadScriptList();
@@ -455,10 +458,14 @@ QWidget *BspRgbPage::buildActionPanel() {
   scriptsLayout->addWidget(scriptsList_, 1);
   scriptsLayout->addWidget(selectedScriptsLabel_);
   scriptsLayout->addLayout(scriptButtons);
-
-  oneClickRgbButton_ = new QPushButton(QStringLiteral("一键启动 RGB"), scriptsGroup);
-  oneClickRgbButton_->setMinimumHeight(40);
-  scriptsLayout->addWidget(oneClickRgbButton_);
+  auto *autoStartHint = new QLabel(
+      QStringLiteral("RGB 连接、启动和断线恢复由 watchdog 自动执行。"),
+      scriptsGroup);
+  autoStartHint->setWordWrap(true);
+  autoStartHint->setStyleSheet(QStringLiteral(
+      "QLabel { background-color: #FFF8DC; border: 1px solid #D6C28A; "
+      "padding: 8px; color: #6B5A22; }"));
+  scriptsLayout->addWidget(autoStartHint);
 
   rightSplitter->addWidget(scriptsGroup);
   rightSplitter->addWidget(buildDataPanel());
@@ -765,6 +772,10 @@ void BspRgbPage::requestRuntimeState(bool force) {
     runtimeRequestPending_ = false;
     return;
   }
+  if (controller_->activeAgentWatchdogState() != QStringLiteral("healthy")) {
+    runtimeRequestPending_ = false;
+    return;
+  }
   if (!pageActive_ && !force) {
     return;
   }
@@ -791,9 +802,6 @@ void BspRgbPage::handleCommandResult(const nlohmann::json &result) {
     }
     if (jsonSuccess(result, payload)) {
       applyRuntimeState(payload);
-    } else {
-      appendLog(QStringLiteral("刷新运行态失败: %1")
-                    .arg(commandMessage(result, payload)));
     }
     return;
   }
@@ -924,10 +932,11 @@ void BspRgbPage::setCameraDisplayActive(bool active) {
   pageActive_ = active;
   if (active) {
     runtimeRequestPending_ = false;
-    runtimeRefreshTimer_->start();
-    requestRuntimeState(true);
+    if (controller_ &&
+        controller_->activeAgentWatchdogState() == QStringLiteral("healthy")) {
+      requestRuntimeState(true);
+    }
   } else {
-    runtimeRefreshTimer_->stop();
     runtimeRequestPending_ = false;
     cameraShmMissingLogged_ = false;
   }
@@ -1072,36 +1081,6 @@ QStringList BspRgbPage::cameraOverlayLines(double meanValue,
 QImage BspRgbPage::latestSourceImage() const {
   return cameraDisplayThread_ ? cameraDisplayThread_->latestSourceImage(0)
                               : QImage{};
-}
-
-void BspRgbPage::startRgbOneClick() {
-  if (!controller_) {
-    return;
-  }
-  const bool deviceReady =
-      controller_->oneClickSucceeded() ||
-      controller_->state() ==
-          recordlab::workflow::WorkflowController::State::DeviceReady;
-  if (deviceReady && cameraMode_ == QStringLiteral("rgb")) {
-    appendLog(QStringLiteral("设备已经处于 RGB 模式。"));
-    requestRuntimeState(true);
-    return;
-  }
-  if (deviceReady && cameraMode_ != QStringLiteral("rgb")) {
-    appendLog(QStringLiteral("设备已启动，正在切换到 RGB 模式。"));
-    controller_->requestExecuteCommand(bspAgentName(),
-                                       QStringLiteral("stop_device"));
-    controller_->requestExecuteCommand(
-        bspAgentName(), QStringLiteral("start_device"),
-        {{QStringLiteral("camera_mode"), QStringLiteral("rgb")}});
-    return;
-  }
-
-  cameraMode_ = QStringLiteral("rgb");
-  appendLog(QStringLiteral("开始一键启动 RGB 模式。"));
-  controller_->setActiveAgent(bspAgentName());
-  controller_->requestOneClickWithStartDeviceParams(
-      {{QStringLiteral("camera_mode"), QStringLiteral("rgb")}});
 }
 
 void BspRgbPage::runSelectedScript() {

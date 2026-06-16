@@ -205,6 +205,50 @@ void AgentWatchdog::setAgentDeviceConfig(
   }
 }
 
+void AgentWatchdog::pauseChecks(const std::string &reason) {
+  pausedCheckCount_.fetch_add(1);
+  {
+    QMutexLocker locker(&lock_);
+    if (!reason.empty()) {
+      pauseReason_ = reason;
+    }
+  }
+  std::cout << "[Watchdog] Checks paused";
+  if (!reason.empty()) {
+    std::cout << ": " << reason;
+  }
+  std::cout << std::endl;
+  notifyStatusUpdate();
+}
+
+void AgentWatchdog::resumeChecks(const std::string &reason) {
+  const int previous = pausedCheckCount_.load();
+  if (previous <= 0) {
+    return;
+  }
+  const int remaining = pausedCheckCount_.fetch_sub(1) - 1;
+  bool notify = false;
+  {
+    QMutexLocker locker(&lock_);
+    if (remaining <= 0) {
+      pausedCheckCount_.store(0);
+      pauseReason_.clear();
+      notify = true;
+    } else if (!reason.empty()) {
+      pauseReason_ = reason;
+      notify = true;
+    }
+  }
+  std::cout << "[Watchdog] Checks resumed";
+  if (!reason.empty()) {
+    std::cout << ": " << reason;
+  }
+  std::cout << std::endl;
+  if (notify) {
+    notifyStatusUpdate();
+  }
+}
+
 // ==================== Thread ====================
 
 void AgentWatchdog::run() {
@@ -232,12 +276,19 @@ void AgentWatchdog::watchdogLoop() {
       }
 
       if (hasRegisteredAgents) {
-        checkCount++;
-        if (checkCount % 60 == 1) {
-          std::cout << "[Watchdog] Checking " << registeredCount
-                    << " agents..." << std::endl;
+        if (checksPaused()) {
+          if (checkCount % 60 == 0) {
+            std::cout << "[Watchdog] Checks paused, skip health check" << std::endl;
+          }
+          checkCount++;
+        } else {
+          checkCount++;
+          if (checkCount % 60 == 1) {
+            std::cout << "[Watchdog] Checking " << registeredCount
+                      << " agents..." << std::endl;
+          }
+          checkAllAgents();
         }
-        checkAllAgents();
       }
     } catch (const std::exception &e) {
       std::cerr << "[Watchdog] Error: " << e.what() << std::endl;
@@ -491,9 +542,12 @@ void AgentWatchdog::notifyStatusUpdate() {
   int initializing = 0;
   QString summary = QStringLiteral("无监控");
   std::string primaryAgent;
+  const bool paused = checksPaused();
+  QString pauseReason;
 
   {
     QMutexLocker locker(&lock_);
+    pauseReason = QString::fromStdString(pauseReason_);
     for (auto &[name, s] : registeredAgents_) {
       if (s.state == AgentStatus::STATE_HEALTHY) {
         healthy++;
@@ -529,7 +583,9 @@ void AgentWatchdog::notifyStatusUpdate() {
       const auto &ps = primaryIt->second;
       const QString deviceLabel = glassesDeviceLabel(ps);
 
-      if (ps.state == AgentStatus::STATE_HEALTHY) {
+      if (paused) {
+        summary = QStringLiteral("%1脚本执行中，暂停检查").arg(deviceLabel);
+      } else if (ps.state == AgentStatus::STATE_HEALTHY) {
         summary = QStringLiteral("%1已连接").arg(deviceLabel);
       } else if (ps.state == AgentStatus::STATE_INITIALIZING) {
         summary = QStringLiteral("%1正在初始化...").arg(deviceLabel);
@@ -557,6 +613,8 @@ void AgentWatchdog::notifyStatusUpdate() {
 
   emit statusUpdate({{"type", "status_update"},
                      {"summary", summary.toStdString()},
+                     {"checks_paused", paused},
+                     {"pause_reason", pauseReason.toStdString()},
                      {"primary_agent", primaryAgent},
                      {"agents", agents}});
 }

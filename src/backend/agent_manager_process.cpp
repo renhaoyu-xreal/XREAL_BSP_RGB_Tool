@@ -6,6 +6,7 @@
  */
 #include "recordlab/backend/agent_manager_process.h"
 #include "recordlab/common/commands.h"
+#include "recordlab/core/compatibility_contract.h"
 #include "recordlab/flowagent/agents/base_agent.h"
 
 #include <QElapsedTimer>
@@ -101,6 +102,19 @@ bool runtimeStateStarted(flowagent::agents::BaseAgent* agent)
   return false;
 }
 
+bool shouldAutoRestorePrimaryRgb(const std::string& agentName)
+{
+  return agentName == recordlab::core::compat::kPrimaryBspAgent;
+}
+
+nlohmann::json defaultWatchdogStartDeviceParams(const std::string& agentName)
+{
+  if (!shouldAutoRestorePrimaryRgb(agentName)) {
+    return nlohmann::json::object();
+  }
+  return {{"camera_mode", std::string("rgb")}};
+}
+
 }  // namespace
 
 AgentManagerProcess::AgentManagerProcess(const QString &configPath,
@@ -178,6 +192,18 @@ AgentManagerProcess::AgentManagerProcess(const QString &configPath,
 }
 
 AgentManagerProcess::~AgentManagerProcess() { stop(); }
+
+void AgentManagerProcess::pauseWatchdogChecks(const std::string &reason) {
+  if (watchdog_) {
+    watchdog_->pauseChecks(reason);
+  }
+}
+
+void AgentManagerProcess::resumeWatchdogChecks(const std::string &reason) {
+  if (watchdog_) {
+    watchdog_->resumeChecks(reason);
+  }
+}
 
 void AgentManagerProcess::start() {
   // 启动后台工作线程、全局订阅和 watchdog，让命令循环进入可用状态。
@@ -337,6 +363,11 @@ void AgentManagerProcess::processCommand(const nlohmann::json &command) {
         }
         watchdog_->setAgentDeviceConfig(agentName, supportedDevices,
                                         suppressDialog);
+        if (shouldAutoRestorePrimaryRgb(agentName)) {
+          lastStartDeviceParams_[agentName] =
+              defaultWatchdogStartDeviceParams(agentName);
+          restoreStartDeviceAfterInit_[agentName] = true;
+        }
       }
 
     } else if (action == ManagerAction::SET_WATCHDOG_INIT_PARAMS) {
@@ -436,13 +467,26 @@ void AgentManagerProcess::processCommand(const nlohmann::json &command) {
             } else if (cmdName == "start_device" || cmdName == "restart_device") {
               if (success ||
                   messageContains(result, QStringLiteral("Already started"))) {
-                lastStartDeviceParams_[agentName] = params;
-                restoreStartDeviceAfterInit_[agentName] = true;
+                if (shouldAutoRestorePrimaryRgb(agentName)) {
+                  lastStartDeviceParams_[agentName] =
+                      params.empty() ? defaultWatchdogStartDeviceParams(agentName)
+                                     : params;
+                  restoreStartDeviceAfterInit_[agentName] = true;
+                } else {
+                  lastStartDeviceParams_[agentName] = params;
+                  restoreStartDeviceAfterInit_[agentName] = true;
+                }
                 watchdog_->markAgentHealthy(agentName);
               }
             } else if ((cmdName == "stop_device" || cmdName == "release_device")
                        && success) {
-              restoreStartDeviceAfterInit_[agentName] = false;
+              if (shouldAutoRestorePrimaryRgb(agentName)) {
+                lastStartDeviceParams_[agentName] =
+                    defaultWatchdogStartDeviceParams(agentName);
+                restoreStartDeviceAfterInit_[agentName] = true;
+              } else {
+                restoreStartDeviceAfterInit_[agentName] = false;
+              }
               watchdog_->markAgentDisconnected(agentName,
                                                cmdName + " completed");
             }

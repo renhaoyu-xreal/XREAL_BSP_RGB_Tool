@@ -91,6 +91,9 @@ public:
       const std::string &agentName,
       const std::unordered_map<int, std::string> &supportedDevices,
       bool suppressDisconnectDialog);
+  void pauseChecks(const std::string &reason = {});
+  void resumeChecks(const std::string &reason = {});
+  bool checksPaused() const { return pausedCheckCount_.load() > 0; }
 
   // ========== 查询 ==========
   QString getStatusSummary() const;
@@ -144,6 +147,8 @@ private:
   double checkInterval_ = 3.0;
   double startupDelay_ = 10.0;
   double checkTimeout_ = 10.0;
+  std::atomic<int> pausedCheckCount_{0};
+  std::string pauseReason_;
 
   // Callbacks
   CheckCallback checkCallback_;

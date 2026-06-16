@@ -18,7 +18,6 @@ class QLabel;
 class QListWidget;
 class QPlainTextEdit;
 class QPushButton;
-class QTimer;
 class QTreeView;
 
 namespace recordlab::backend {
@@ -60,6 +59,9 @@ public slots:
   void setCameraDisplayActive(bool active);
   void syncLatestData(const recordlab::backend::DataReceiverManager *receiver);
 
+signals:
+  void scriptExecutionStateChanged(bool running);
+
 protected:
   void resizeEvent(QResizeEvent *event) override;
 
@@ -73,12 +75,10 @@ private:
   recordlab::widgets::ImageDisplayWidget *previewWidget_ = nullptr;
   QLabel *previewHintLabel_ = nullptr;
   QPlainTextEdit *logView_ = nullptr;
-  QTimer *runtimeRefreshTimer_ = nullptr;
   QListWidget *scriptsList_ = nullptr;
   QLabel *selectedScriptsLabel_ = nullptr;
   QPushButton *runScriptButton_ = nullptr;
   QPushButton *stopScriptButton_ = nullptr;
-  QPushButton *oneClickRgbButton_ = nullptr;
   QGroupBox *workflowGroup_ = nullptr;
   QLabel *workflowTitleLabel_ = nullptr;
   QLabel *workflowMessageLabel_ = nullptr;
@@ -126,7 +126,6 @@ private:
   void setInfoFromJson(const QString &key, const nlohmann::json &value);
 
 private slots:
-  void startRgbOneClick();
   void runSelectedScript();
   void stopScript();
   void refreshDataTree();

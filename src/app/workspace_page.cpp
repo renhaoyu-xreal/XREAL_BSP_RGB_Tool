@@ -279,6 +279,17 @@ WorkspacePage::WorkspacePage(const recordlab::core::AppContext &context,
                   QStringLiteral("时间延迟: %1 ms").arg(delayMs, 0, 'f', 1));
             }
           });
+  connect(bspRgbPage_, &recordlab::bsp::BspRgbPage::scriptExecutionStateChanged,
+          this, [this](bool running) {
+            if (!agentManagerProcess_) {
+              return;
+            }
+            if (running) {
+              agentManagerProcess_->pauseWatchdogChecks("BSP RGB script running");
+            } else {
+              agentManagerProcess_->resumeWatchdogChecks("BSP RGB script finished");
+            }
+          });
   connect(tabs_, &QTabWidget::currentChanged, this, [this](int index) {
     QWidget *current = tabs_->widget(index);
     if (bspPage_) {
@@ -349,8 +360,9 @@ void WorkspacePage::activateAgent(const QString &agentName) {
   if (!agentName.trimmed().isEmpty()) {
     std::cout << "[WorkspacePage] Active agent switched to "
               << agentName.toStdString()
-              << "; waiting for explicit Connect/one-click before INIT_AGENT"
+              << "; watchdog auto-connect/start is enabled"
               << std::endl;
+    controller_->requestConnect();
   }
 
   // 独立 RGB 工具默认直接切到 BSP RGB 页，数据+命令页作为辅助工作页保留。
