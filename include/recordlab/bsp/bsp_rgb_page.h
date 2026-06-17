@@ -78,7 +78,6 @@ private:
   QLabel *selectedScriptsLabel_ = nullptr;
   QPushButton *runScriptButton_ = nullptr;
   QPushButton *stopScriptButton_ = nullptr;
-  QPushButton *oneClickRgbButton_ = nullptr;
   QGroupBox *workflowGroup_ = nullptr;
   QLabel *workflowTitleLabel_ = nullptr;
   QLabel *workflowMessageLabel_ = nullptr;
@@ -126,7 +125,6 @@ private:
   void setInfoFromJson(const QString &key, const nlohmann::json &value);
 
 private slots:
-  void startRgbOneClick();
   void runSelectedScript();
   void stopScript();
   void refreshDataTree();

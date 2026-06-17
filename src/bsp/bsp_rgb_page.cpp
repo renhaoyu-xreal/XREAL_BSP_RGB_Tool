@@ -277,8 +277,6 @@ BspRgbPage::BspRgbPage(const recordlab::core::AppContext &context,
   connect(runtimeRefreshTimer_, &QTimer::timeout, this,
           [this]() { requestRuntimeState(false); });
 
-  connect(oneClickRgbButton_, &QPushButton::clicked, this,
-          &BspRgbPage::startRgbOneClick);
   connect(runScriptButton_, &QPushButton::clicked, this,
           &BspRgbPage::runSelectedScript);
   connect(stopScriptButton_, &QPushButton::clicked, this,
@@ -455,10 +453,6 @@ QWidget *BspRgbPage::buildActionPanel() {
   scriptsLayout->addWidget(scriptsList_, 1);
   scriptsLayout->addWidget(selectedScriptsLabel_);
   scriptsLayout->addLayout(scriptButtons);
-
-  oneClickRgbButton_ = new QPushButton(QStringLiteral("一键启动 RGB"), scriptsGroup);
-  oneClickRgbButton_->setMinimumHeight(40);
-  scriptsLayout->addWidget(oneClickRgbButton_);
 
   rightSplitter->addWidget(scriptsGroup);
   rightSplitter->addWidget(buildDataPanel());
@@ -1072,36 +1066,6 @@ QStringList BspRgbPage::cameraOverlayLines(double meanValue,
 QImage BspRgbPage::latestSourceImage() const {
   return cameraDisplayThread_ ? cameraDisplayThread_->latestSourceImage(0)
                               : QImage{};
-}
-
-void BspRgbPage::startRgbOneClick() {
-  if (!controller_) {
-    return;
-  }
-  const bool deviceReady =
-      controller_->oneClickSucceeded() ||
-      controller_->state() ==
-          recordlab::workflow::WorkflowController::State::DeviceReady;
-  if (deviceReady && cameraMode_ == QStringLiteral("rgb")) {
-    appendLog(QStringLiteral("设备已经处于 RGB 模式。"));
-    requestRuntimeState(true);
-    return;
-  }
-  if (deviceReady && cameraMode_ != QStringLiteral("rgb")) {
-    appendLog(QStringLiteral("设备已启动，正在切换到 RGB 模式。"));
-    controller_->requestExecuteCommand(bspAgentName(),
-                                       QStringLiteral("stop_device"));
-    controller_->requestExecuteCommand(
-        bspAgentName(), QStringLiteral("start_device"),
-        {{QStringLiteral("camera_mode"), QStringLiteral("rgb")}});
-    return;
-  }
-
-  cameraMode_ = QStringLiteral("rgb");
-  appendLog(QStringLiteral("开始一键启动 RGB 模式。"));
-  controller_->setActiveAgent(bspAgentName());
-  controller_->requestOneClickWithStartDeviceParams(
-      {{QStringLiteral("camera_mode"), QStringLiteral("rgb")}});
 }
 
 void BspRgbPage::runSelectedScript() {

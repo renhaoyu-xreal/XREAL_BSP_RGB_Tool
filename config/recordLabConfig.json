@@ -1,6 +1,6 @@
 {
   "version": "v1.0.2",
-  "update_info": "运行录制脚本前，请先点击 BSP RGB 页的一键启动 RGB，稳定连接眼镜并进入 RGB 预览后再执行抓取或录制。",
+  "update_info": "运行录制脚本前，请先确认 BSP RGB 链路已经稳定连接并进入 RGB 预览，再执行抓取或录制。",
   "usb_product_catalog": [
     {
       "vid": "0x3318",

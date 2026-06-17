@@ -90,7 +90,7 @@ runtime_device = runtime_result.get("device") or {}
 latest_frame = runtime_result.get("latest_frame") or {}
 camera_mode = runtime_result.get("camera_mode")
 if not runtime_device.get("started"):
-    _fail_and_exit(WorkflowStep.GET_BSP_RUNTIME_STATE, "设备未启动，请先一键启动 RGB")
+    _fail_and_exit(WorkflowStep.GET_BSP_RUNTIME_STATE, "设备未启动，请先启动 RGB")
 if camera_mode != "rgb":
     _fail_and_exit(
         WorkflowStep.GET_BSP_RUNTIME_STATE,
