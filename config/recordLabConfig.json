@@ -1,6 +1,6 @@
 {
   "version": "v1.0.1",
-  "update_info": "1. 启动软件后默认由 watchdog 自动连接、启动并恢复 RGB，无需再手动点击\"一键启动 RGB\"。\n2. 执行 RAW 抓取或相关录制脚本时，watchdog 会暂时暂停检查，避免和脚本内部的重启恢复流程冲突。\n3. 运行态信息改为按需刷新，成功状态不再重复写入 UI 日志。",
+  "update_info": "1. 表单历史记录功能，默认填写上一次的数值，下拉可看到最近五次的，重启软件仍会保留历史记录\n2. 删除一键启动按钮，插上眼镜自动连接，启动",
   "usb_product_catalog": [
     {
       "vid": "0x3318",
@@ -20,58 +20,6 @@
   "script_catalog": {
     "agents": {
       "glasses_bsp_node": [
-        {
-          "relative_path": "scripts/record_bsp_imu.py",
-          "supported_model_ids": [
-            "1082"
-          ],
-          "supported_models": {
-            "1082": "Hylla"
-          },
-          "required_agents": [
-            "glasses_bsp_node"
-          ],
-          "enabled": true
-        },
-        {
-          "relative_path": "scripts/record_bsp_imu_static.py",
-          "supported_model_ids": [
-            "1082"
-          ],
-          "supported_models": {
-            "1082": "Hylla"
-          },
-          "required_agents": [
-            "glasses_bsp_node"
-          ],
-          "enabled": true
-        },
-        {
-          "relative_path": "scripts/record_bsp_imu_dynamic.py",
-          "supported_model_ids": [
-            "1082"
-          ],
-          "supported_models": {
-            "1082": "Hylla"
-          },
-          "required_agents": [
-            "glasses_bsp_node"
-          ],
-          "enabled": true
-        },
-        {
-          "relative_path": "scripts/record_bsp_imu_cam.py",
-          "supported_model_ids": [
-            "1082"
-          ],
-          "supported_models": {
-            "1082": "Hylla"
-          },
-          "required_agents": [
-            "glasses_bsp_node"
-          ],
-          "enabled": true
-        },
         {
           "relative_path": "scripts/record_bsp_rgb_raw.py",
           "supported_model_ids": [

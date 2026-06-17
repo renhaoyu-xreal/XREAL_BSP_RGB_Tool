@@ -9,7 +9,9 @@
 #include <QCoreApplication>
 #include <QDateTime>
 #include <QDir>
+#include <QElapsedTimer>
 #include <QFile>
+#include <QFileInfo>
 #include <QRegularExpression>
 #include <QTextStream>
 #include <QTimer>
@@ -78,6 +80,24 @@ std::optional<double> firstAvailableRgbTemperature(const BspDevice *device) {
     return latestFrameTemp;
   }
   return jsonNumberIfPresent(device->latestTemperatures(), "rgb_temperature");
+}
+
+QString captureFileStateText(const QString &path) {
+  const QFileInfo info(path);
+  if (!info.exists()) {
+    return QStringLiteral("%1 (missing)").arg(path);
+  }
+  return QStringLiteral("%1 (exists, %2 bytes)")
+      .arg(path)
+      .arg(info.size());
+}
+
+void logCaptureRawStage(const QString &stage, const QString &detail = {}) {
+  std::cout << "[capture_raw_frame] " << stage.toStdString();
+  if (!detail.isEmpty()) {
+    std::cout << " | " << detail.toStdString();
+  }
+  std::cout << std::endl;
 }
 
 void logImuSourceProbe(const char *tag, ImuSourceProbe &probe,
@@ -1385,6 +1405,8 @@ json BspRecordingSubnode::cmdGetBspRuntimeState(uint32_t, const std::string &,
 
 json BspRecordingSubnode::cmdCaptureRawFrame(uint32_t, const std::string &,
                                              const json &params) {
+  QElapsedTimer totalTimer;
+  totalTimer.start();
   auto *bspDevice = dynamic_cast<BspDevice *>(device_);
   if (!bspDevice) {
     return {{"success", false},
@@ -1435,8 +1457,22 @@ json BspRecordingSubnode::cmdCaptureRawFrame(uint32_t, const std::string &,
   const QString imageDir = QDir(captureDir).filePath(targetSubdir);
   QDir().mkpath(imageDir);
   const QString localRawPath = QDir(imageDir).filePath(rawFilename);
+  logCaptureRawStage(
+      QStringLiteral("start"),
+      QStringLiteral("dataset=%1 target_subdir=%2 capture_dir=%3 local_raw=%4")
+          .arg(QString::fromStdString(datasetName), targetSubdir, captureDir,
+               localRawPath));
+  logCaptureRawStage(
+      QStringLiteral("local_paths_ready"),
+      QStringLiteral("image_dir=%1 local_raw_state=%2")
+          .arg(imageDir, captureFileStateText(localRawPath)));
 
   if (QFileInfo::exists(localRawPath)) {
+    logCaptureRawStage(
+        QStringLiteral("skip_existing"),
+        QStringLiteral("elapsed_ms=%1 local_raw_state=%2")
+            .arg(totalTimer.elapsed())
+            .arg(captureFileStateText(localRawPath)));
     return {{"success", true},
             {"message", "Raw frame already exists: " + localRawPath.toStdString()},
             {"command", "capture_raw_frame"},
@@ -1449,40 +1485,178 @@ json BspRecordingSubnode::cmdCaptureRawFrame(uint32_t, const std::string &,
   const bool releasedForCapture =
       bspDevice->isStarted() &&
       !params.value("direct_capture_without_start_device", false);
+  bool shouldRestoreRgbAfterFailure = false;
+  struct RestoreOutcome {
+    bool success = true;
+    std::string message;
+    std::optional<double> firstRgbTemperature;
+  };
+  auto restoreRgbAfterCapture = [&]() -> RestoreOutcome {
+    RestoreOutcome outcome;
+    if (!releasedForCapture) {
+      return outcome;
+    }
+
+    logCaptureRawStage(QStringLiteral("restore_reboot_begin"),
+                       QStringLiteral("elapsed_ms=%1").arg(totalTimer.elapsed()));
+    auto rebootResult = bspDevice->rebootViaSshAndWait();
+    outcome.success = rebootResult.value("success", false);
+    outcome.message = rebootResult.value("message", std::string());
+    logCaptureRawStage(
+        QStringLiteral("restore_reboot_end"),
+        QStringLiteral("success=%1 message=%2 elapsed_ms=%3")
+            .arg(outcome.success ? QStringLiteral("true")
+                                 : QStringLiteral("false"))
+            .arg(QString::fromStdString(outcome.message))
+            .arg(totalTimer.elapsed()));
+    if (!outcome.success) {
+      return outcome;
+    }
+
+    logCaptureRawStage(QStringLiteral("restore_init_begin"),
+                       QStringLiteral("elapsed_ms=%1").arg(totalTimer.elapsed()));
+    auto initResult = bspDevice->initialize({{"skip_restart_check", true}});
+    outcome.success = initResult.value("success", false);
+    outcome.message = initResult.value("message", std::string());
+    logCaptureRawStage(
+        QStringLiteral("restore_init_end"),
+        QStringLiteral("success=%1 message=%2 elapsed_ms=%3")
+            .arg(outcome.success ? QStringLiteral("true")
+                                 : QStringLiteral("false"))
+            .arg(QString::fromStdString(outcome.message))
+            .arg(totalTimer.elapsed()));
+    if (!outcome.success) {
+      return outcome;
+    }
+
+    logCaptureRawStage(QStringLiteral("restore_start_begin"),
+                       QStringLiteral("elapsed_ms=%1").arg(totalTimer.elapsed()));
+    auto startResult = bspDevice->start({{"camera_mode", CAMERA_MODE_RGB}});
+    outcome.success = startResult.value("success", false);
+    outcome.message = startResult.value("message", std::string());
+    logCaptureRawStage(
+        QStringLiteral("restore_start_end"),
+        QStringLiteral("success=%1 message=%2 elapsed_ms=%3")
+            .arg(outcome.success ? QStringLiteral("true")
+                                 : QStringLiteral("false"))
+            .arg(QString::fromStdString(outcome.message))
+            .arg(totalTimer.elapsed()));
+    if (outcome.success) {
+      outcome.firstRgbTemperature = firstAvailableRgbTemperature(bspDevice);
+      logCaptureRawStage(
+          QStringLiteral("restore_first_rgb_temperature"),
+          QStringLiteral("value=%1 elapsed_ms=%2")
+              .arg(outcome.firstRgbTemperature
+                       ? QString::number(*outcome.firstRgbTemperature, 'f', 2)
+                       : QStringLiteral("<none>"))
+              .arg(totalTimer.elapsed()));
+    }
+    return outcome;
+  };
+  auto failureResponse = [&](const std::string &message) -> json {
+    json response = {{"success", false},
+                     {"message", message},
+                     {"command", "capture_raw_frame"},
+                     {"rgb_restore_success", nullptr},
+                     {"rgb_restore_message", nullptr}};
+    if (!shouldRestoreRgbAfterFailure) {
+      return response;
+    }
+    auto restoreOutcome = restoreRgbAfterCapture();
+    response["rgb_restore_success"] = restoreOutcome.success;
+    response["rgb_restore_message"] = restoreOutcome.message;
+    if (restoreOutcome.success) {
+      response["message"] =
+          message + " | RGB restored after capture failure";
+    } else {
+      response["message"] =
+          message + " | RGB restore failed after capture failure: " +
+          restoreOutcome.message;
+    }
+    return response;
+  };
+  logCaptureRawStage(
+      QStringLiteral("precheck"),
+      QStringLiteral("released_for_capture=%1 camera_mode=%2 started=%3")
+          .arg(releasedForCapture ? QStringLiteral("true")
+                                  : QStringLiteral("false"))
+          .arg(QString::fromStdString(bspDevice->cameraMode()))
+          .arg(bspDevice->isStarted() ? QStringLiteral("true")
+                                      : QStringLiteral("false")));
   if (releasedForCapture) {
+    logCaptureRawStage(QStringLiteral("release_before_capture_begin"),
+                       QStringLiteral("elapsed_ms=%1").arg(totalTimer.elapsed()));
     auto releaseResult = bspDevice->release();
+    logCaptureRawStage(
+        QStringLiteral("release_before_capture_end"),
+        QStringLiteral("success=%1 message=%2 elapsed_ms=%3")
+            .arg(releaseResult.value("success", false) ? QStringLiteral("true")
+                                                       : QStringLiteral("false"))
+            .arg(QString::fromStdString(
+                releaseResult.value("message", std::string())))
+            .arg(totalTimer.elapsed()));
     if (!releaseResult.value("success", false)) {
       return {{"success", false},
               {"message", "release_device: " +
                               releaseResult.value("message", std::string())},
               {"command", "capture_raw_frame"}};
     }
+    shouldRestoreRgbAfterFailure = true;
+    logCaptureRawStage(QStringLiteral("reboot_before_capture_begin"),
+                       QStringLiteral("elapsed_ms=%1").arg(totalTimer.elapsed()));
     auto rebootResult = bspDevice->rebootViaSshAndWait();
+    logCaptureRawStage(
+        QStringLiteral("reboot_before_capture_end"),
+        QStringLiteral("success=%1 message=%2 elapsed_ms=%3")
+            .arg(rebootResult.value("success", false) ? QStringLiteral("true")
+                                                      : QStringLiteral("false"))
+            .arg(QString::fromStdString(
+                rebootResult.value("message", std::string())))
+            .arg(totalTimer.elapsed()));
     if (!rebootResult.value("success", false)) {
-      return {{"success", false},
-              {"message", "reboot_before_capture: " +
-                              rebootResult.value("message", std::string())},
-              {"command", "capture_raw_frame"}};
+      return failureResponse("reboot_before_capture: " +
+                             rebootResult.value("message", std::string()));
     }
   }
 
+  logCaptureRawStage(QStringLiteral("remote_capture_begin"),
+                     QStringLiteral("elapsed_ms=%1").arg(totalTimer.elapsed()));
   json captureResult = bspDevice->captureRawFrame(params);
+  logCaptureRawStage(
+      QStringLiteral("remote_capture_end"),
+      QStringLiteral("success=%1 remote_size=%2 message=%3 elapsed_ms=%4")
+          .arg(captureResult.value("success", false) ? QStringLiteral("true")
+                                                     : QStringLiteral("false"))
+          .arg(captureResult.value("remote_size", 0))
+          .arg(QString::fromStdString(
+              captureResult.value("message", std::string())))
+          .arg(totalTimer.elapsed()));
   if (!captureResult.value("success", false)) {
-    return {{"success", false},
-            {"message", "capture_raw_via_cameratest: " +
-                            captureResult.value("message", std::string())},
-            {"command", "capture_raw_frame"}};
+    return failureResponse("capture_raw_via_cameratest: " +
+                           captureResult.value("message", std::string()));
   }
 
+  logCaptureRawStage(
+      QStringLiteral("download_raw_begin"),
+      QStringLiteral("remote=%1 local=%2")
+          .arg(QString::fromStdString(params.value(
+                   "remote_path", std::string(DEFAULT_RAW_REMOTE_PATH))),
+               localRawPath));
   auto fetchRaw = sshManager_->copyFileFromGlasses(
       params.value("remote_path", std::string(DEFAULT_RAW_REMOTE_PATH)),
       localRawPath.toStdString());
+  logCaptureRawStage(
+      QStringLiteral("download_raw_end"),
+      QStringLiteral("success=%1 message=%2 local_raw_state=%3 elapsed_ms=%4")
+          .arg(fetchRaw.value("success", false) ? QStringLiteral("true")
+                                                : QStringLiteral("false"))
+          .arg(QString::fromStdString(fetchRaw.value("message", std::string())))
+          .arg(captureFileStateText(localRawPath))
+          .arg(totalTimer.elapsed()));
   if (!fetchRaw.value("success", false)) {
     QFile::remove(localRawPath);
-    return {{"success", false},
-            {"message", "download_raw_file: " +
-                            fetchRaw.value("message", std::string())},
-            {"command", "capture_raw_frame"}};
+    return failureResponse("download_raw_file: " +
+                           fetchRaw.value("message", std::string()));
   }
 
   QString frameFilePath;
@@ -1494,6 +1668,12 @@ json BspRecordingSubnode::cmdCaptureRawFrame(uint32_t, const std::string &,
       "remote_frame_path", std::string(DEFAULT_RAW_REMOTE_FRAME_PATH));
   const std::string remoteTimestamp = captureResult.value(
       "remote_timestamp_path", std::string(DEFAULT_RAW_REMOTE_TIMESTAMP_PATH));
+  logCaptureRawStage(
+      QStringLiteral("download_sidecars_begin"),
+      QStringLiteral("frame_remote=%1 timestamp_remote=%2 elapsed_ms=%3")
+          .arg(QString::fromStdString(remoteFrame),
+               QString::fromStdString(remoteTimestamp))
+          .arg(totalTimer.elapsed()));
   const auto fetchFrame =
       sshManager_->copyFileFromGlasses(remoteFrame, frameTmp.toStdString());
   const auto fetchTimestamp =
@@ -1560,6 +1740,20 @@ json BspRecordingSubnode::cmdCaptureRawFrame(uint32_t, const std::string &,
               << ", fallback=" << canonicalTimestampText.toStdString()
               << ")" << std::endl;
   }
+  logCaptureRawStage(
+      QStringLiteral("download_sidecars_end"),
+      QStringLiteral("frame_success=%1 timestamp_success=%2 frame_file=%3 "
+                     "glass_timestamp_file=%4 elapsed_ms=%5")
+          .arg(fetchFrame.value("success", false) ? QStringLiteral("true")
+                                                  : QStringLiteral("false"))
+          .arg(fetchTimestamp.value("success", false) ? QStringLiteral("true")
+                                                      : QStringLiteral("false"))
+          .arg(frameFilePath.isEmpty() ? QStringLiteral("<none>")
+                                       : captureFileStateText(frameFilePath))
+          .arg(glassTimestampFilePath.isEmpty()
+                   ? QStringLiteral("<none>")
+                   : captureFileStateText(glassTimestampFilePath))
+          .arg(totalTimer.elapsed()));
   QFile::remove(frameTmp);
   QFile::remove(timestampTmp);
 
@@ -1580,28 +1774,18 @@ json BspRecordingSubnode::cmdCaptureRawFrame(uint32_t, const std::string &,
              << "\n";
     }
   }
+  logCaptureRawStage(
+      QStringLiteral("local_write_summary"),
+      QStringLiteral("raw=%1 metadata=%2 elapsed_ms=%3")
+          .arg(captureFileStateText(localRawPath))
+          .arg(metadataFilePath.isEmpty() ? QStringLiteral("<none>")
+                                          : captureFileStateText(metadataFilePath))
+          .arg(totalTimer.elapsed()));
 
-  bool restoreSuccess = true;
-  std::string restoreMessage;
-  std::optional<double> restoredFirstRgbTemperature;
-  if (releasedForCapture) {
-    auto rebootResult = bspDevice->rebootViaSshAndWait();
-    restoreSuccess = rebootResult.value("success", false);
-    restoreMessage = rebootResult.value("message", std::string());
-    if (restoreSuccess) {
-      auto initResult = bspDevice->initialize({{"skip_restart_check", true}});
-      restoreSuccess = initResult.value("success", false);
-      restoreMessage = initResult.value("message", std::string());
-    }
-    if (restoreSuccess) {
-      auto startResult = bspDevice->start({{"camera_mode", CAMERA_MODE_RGB}});
-      restoreSuccess = startResult.value("success", false);
-      restoreMessage = startResult.value("message", std::string());
-      if (restoreSuccess) {
-        restoredFirstRgbTemperature = firstAvailableRgbTemperature(bspDevice);
-      }
-    }
-  }
+  const RestoreOutcome restoreOutcome = restoreRgbAfterCapture();
+  const bool restoreSuccess = restoreOutcome.success;
+  const std::string restoreMessage = restoreOutcome.message;
+  const auto restoredFirstRgbTemperature = restoreOutcome.firstRgbTemperature;
 
   std::optional<double> averageRgbTemperature;
   if (preCaptureRgbTemperature && restoredFirstRgbTemperature) {
@@ -1660,6 +1844,18 @@ json BspRecordingSubnode::cmdCaptureRawFrame(uint32_t, const std::string &,
   if (averageRgbTemperature) {
     response["average_rgb_temperature"] = *averageRgbTemperature;
   }
+  logCaptureRawStage(
+      QStringLiteral("return"),
+      QStringLiteral("success=%1 rgb_restore_success=%2 total_elapsed_ms=%3 "
+                     "raw=%4")
+          .arg(restoreSuccess ? QStringLiteral("true") : QStringLiteral("false"))
+          .arg(response.contains("rgb_restore_success") &&
+                       response["rgb_restore_success"].is_boolean() &&
+                       response["rgb_restore_success"].get<bool>()
+                   ? QStringLiteral("true")
+                   : QStringLiteral("false"))
+          .arg(totalTimer.elapsed())
+          .arg(captureFileStateText(localRawPath)));
   return response;
 }
 

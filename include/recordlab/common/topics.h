@@ -63,10 +63,12 @@ inline QString getTopicAddress(const QString &topicName,
   static const std::unordered_map<std::string, int> portMap = {
       {TOPIC_CAMERA, PORT_CAMERA},
       {TOPIC_IMU, PORT_IMU},
+      {TOPIC_IMU1, PORT_IMU1},
       {TOPIC_MOTION_STATUS, PORT_MOTION_STATUS},
       {TOPIC_RECORD_TIMER, PORT_RECORD_TIMER},
       {TOPIC_TIME_DELAY, PORT_TIME_DELAY},
       {TOPIC_ANDROID_IMU, PORT_ANDROID_IMU},
+  };
 
   auto it = portMap.find(topicName.toStdString());
   if (it == portMap.end()) {

@@ -278,17 +278,6 @@ WorkspacePage::WorkspacePage(const recordlab::core::AppContext &context,
                   QStringLiteral("时间延迟: %1 ms").arg(delayMs, 0, 'f', 1));
             }
           });
-  connect(bspRgbPage_, &recordlab::bsp::BspRgbPage::scriptExecutionStateChanged,
-          this, [this](bool running) {
-            if (!agentManagerProcess_) {
-              return;
-            }
-            if (running) {
-              agentManagerProcess_->pauseWatchdogChecks("BSP RGB script running");
-            } else {
-              agentManagerProcess_->resumeWatchdogChecks("BSP RGB script finished");
-            }
-          });
   connect(tabs_, &QTabWidget::currentChanged, this, [this](int index) {
     QWidget *current = tabs_->widget(index);
     if (bspPage_) {

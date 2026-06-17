@@ -611,7 +611,11 @@ void DataReceiverManager::pollReceiverData() {
 
 void DataReceiverManager::applyDataUpdate(const QString &dataName,
                                           const json &value, double timestamp,
-        
+                                          double frequency) {
+  const std::string name = dataName.toStdString();
+  double previousTimestamp = 0.0;
+  bool hasPreviousTimestamp = false;
+
   // Update latest
   {
     QMutexLocker locker(&dataLock_);

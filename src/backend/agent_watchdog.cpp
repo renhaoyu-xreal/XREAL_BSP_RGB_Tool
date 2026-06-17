@@ -2,6 +2,7 @@
  * AgentWatchdog 实现
  */
 #include "recordlab/backend/agent_watchdog.h"
+#include <algorithm>
 #include <chrono>
 #include <iostream>
 #include <thread>
@@ -139,6 +140,7 @@ void AgentWatchdog::markAgentInitializing(const std::string &agentName,
     auto it = registeredAgents_.find(agentName);
     if (it != registeredAgents_.end()) {
       it->second.state = AgentStatus::STATE_INITIALIZING;
+      it->second.expectedTransientDisconnect = false;
       it->second.lastError = message;
       changed = true;
     }
@@ -157,6 +159,7 @@ void AgentWatchdog::markAgentHealthy(const std::string &agentName,
     auto it = registeredAgents_.find(agentName);
     if (it != registeredAgents_.end()) {
       it->second.state = AgentStatus::STATE_HEALTHY;
+      it->second.expectedTransientDisconnect = false;
       it->second.lastError.clear();
       it->second.consecutiveFailures = 0;
       if (updateInitTime) {
@@ -179,6 +182,7 @@ void AgentWatchdog::markAgentDisconnected(const std::string &agentName,
     auto it = registeredAgents_.find(agentName);
     if (it != registeredAgents_.end()) {
       it->second.state = AgentStatus::STATE_DISCONNECTED;
+      it->second.expectedTransientDisconnect = false;
       it->second.lastError = error;
       changed = true;
     }
@@ -186,6 +190,29 @@ void AgentWatchdog::markAgentDisconnected(const std::string &agentName,
   if (changed) {
     notifyStatusUpdate();
   }
+}
+
+void AgentWatchdog::beginExpectedTransientDisconnect(
+    const std::string &agentName, const std::string &message) {
+  QMutexLocker locker(&lock_);
+  auto it = registeredAgents_.find(agentName);
+  if (it == registeredAgents_.end()) {
+    return;
+  }
+  it->second.expectedTransientDisconnect = true;
+  if (!message.empty()) {
+    it->second.lastError = message;
+  }
+}
+
+void AgentWatchdog::endExpectedTransientDisconnect(
+    const std::string &agentName) {
+  QMutexLocker locker(&lock_);
+  auto it = registeredAgents_.find(agentName);
+  if (it == registeredAgents_.end()) {
+    return;
+  }
+  it->second.expectedTransientDisconnect = false;
 }
 
 void AgentWatchdog::setAgentDeviceConfig(
@@ -206,14 +233,14 @@ void AgentWatchdog::setAgentDeviceConfig(
 }
 
 void AgentWatchdog::pauseChecks(const std::string &reason) {
-  pausedCheckCount_.fetch_add(1);
+  const int depth = pausedCheckCount_.fetch_add(1) + 1;
   {
     QMutexLocker locker(&lock_);
     if (!reason.empty()) {
       pauseReason_ = reason;
     }
   }
-  std::cout << "[Watchdog] Checks paused";
+  std::cout << "[Watchdog] Checks paused (depth=" << depth << ")";
   if (!reason.empty()) {
     std::cout << ": " << reason;
   }
@@ -234,12 +261,10 @@ void AgentWatchdog::resumeChecks(const std::string &reason) {
       pausedCheckCount_.store(0);
       pauseReason_.clear();
       notify = true;
-    } else if (!reason.empty()) {
-      pauseReason_ = reason;
-      notify = true;
     }
   }
-  std::cout << "[Watchdog] Checks resumed";
+  std::cout << "[Watchdog] Checks resumed (depth="
+            << std::max(remaining, 0) << ")";
   if (!reason.empty()) {
     std::cout << ": " << reason;
   }
@@ -416,6 +441,10 @@ void AgentWatchdog::handleCheckSuccess(const std::string &agentName) {
     }
 
     auto &status = it->second;
+    if (status.expectedTransientDisconnect) {
+      status.lastError.clear();
+      return;
+    }
     const std::string oldState = status.state;
     status.lastError.clear();
 
@@ -459,6 +488,10 @@ void AgentWatchdog::handleCheckFailure(const std::string &agentName,
     }
 
     auto &status = it->second;
+    if (status.expectedTransientDisconnect) {
+      status.lastError = error;
+      return;
+    }
     const std::string oldState = status.state;
     status.lastError = error;
     suppressDialog = status.suppressDisconnectDialog;
