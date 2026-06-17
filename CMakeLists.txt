@@ -117,8 +117,6 @@ add_executable(recordlabc
     src/widgets/simple_curve_plot_widget.cpp
     src/widgets/data_monitor_widget.cpp
     src/widgets/data_output_directory_widget.cpp
-    src/widgets/nviz_message_tree_widget.cpp
-    src/widgets/nviz_tree_plot_widget.cpp
     src/widgets/camera_display_thread.cpp
     src/widgets/image_display_widget.cpp
 
@@ -154,8 +152,7 @@ add_executable(recordlabc
     src/backend/data_receiver.cpp
     src/ui/control_center_main.cpp
 
-    # --- Phase 8-9: NvizNode & IMU 仿真 ---
-    src/subnodes/nviz_node_subnode.cpp
+    # --- Phase 8-9: IMU 仿真 ---
     src/subnodes/imu_sim_main_subnode.cpp
     src/subnodes/android_subnode.cpp
 
@@ -181,14 +178,12 @@ add_executable(recordlabc
     include/recordlab/script/script_execution_page.h
     include/recordlab/subnodes/main_subnode.h
     include/recordlab/subnodes/bsp_main_subnode.h
-    include/recordlab/subnodes/nviz_node_subnode.h
     include/recordlab/subnodes/imu_sim_main_subnode.h
     include/recordlab/subnodes/android_subnode.h
     include/recordlab/ui/control_center_main.h
     include/recordlab/widgets/camera_display_thread.h
     include/recordlab/widgets/data_output_directory_widget.h
     include/recordlab/widgets/data_monitor_widget.h
-    include/recordlab/widgets/nviz_message_tree_widget.h
     include/recordlab/widgets/image_display_widget.h
 )
 
@@ -474,48 +469,6 @@ target_link_libraries(imu_sim_main_subnode
 )
 
 set_target_properties(imu_sim_main_subnode PROPERTIES
-    AUTOMOC ON
-)
-
-# ============================================================================
-# 独立子节点可执行文件: nviz_node_subnode
-# 用于独立启动 NVIZ 子节点
-# ============================================================================
-add_executable(nviz_node_subnode
-    src/subnodes/nviz_node_subnode_entry.cpp
-    src/subnodes/nviz_node_subnode.cpp
-    src/core/legacy_config_loader.cpp
-    src/core/usb_device_catalog.cpp
-    src/subnodes/main_subnode.cpp
-    src/subnodes/base_subnode.cpp
-    src/common/camera_shared_memory.cpp
-    src/common/motion_detector.cpp
-    src/common/data_registry_client.cpp
-
-    include/recordlab/subnodes/base_subnode.h
-    include/recordlab/subnodes/main_subnode.h
-    include/recordlab/subnodes/nviz_node_subnode.h
-)
-
-target_include_directories(nviz_node_subnode
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
-
-target_compile_definitions(nviz_node_subnode
-    PRIVATE
-        RECORDLABC_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
-)
-
-target_link_libraries(nviz_node_subnode
-    PRIVATE
-        Qt6::Core
-        Qt6::Gui
-        Qt6::Network
-        echo_message_system
-)
-
-set_target_properties(nviz_node_subnode PROPERTIES
     AUTOMOC ON
 )
 

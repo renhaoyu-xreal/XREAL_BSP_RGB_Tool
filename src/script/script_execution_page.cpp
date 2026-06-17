@@ -927,9 +927,8 @@ void ScriptExecutionPage::syncMonitorDisplayMode()
     if (mode_ != Mode::Batch || !monitorWidget_ || !controller_) {
         return;
     }
-    monitorWidget_->setNvizDisplayMode(controller_->isNvizAgent());
     monitorWidget_->setCameraPreviewEnabled(
-        !(controller_->isNvizAgent() || controller_->isHelenAgent()));
+        !controller_->isHelenAgent());
 }
 
 void ScriptExecutionPage::loadDebugScriptPreview(const QString& scriptPath)
@@ -1099,7 +1098,7 @@ void ScriptExecutionPage::runSelectedScripts()
 
     if (!controller_->isTargetAgentSelected()) {
         logView_->appendPlainText(
-            QStringLiteral("提示: 当前主 Agent 不是 glasses_bsp_node、glasses_nviz_node 或 helen_node，脚本中的设备动作可能无法执行。"));
+            QStringLiteral("提示: 当前主 Agent 不是 glasses_bsp_node 或 helen_node，脚本中的设备动作可能无法执行。"));
     }
 
     currentEnvironment_ = buildScriptEnvironment();

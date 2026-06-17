@@ -11,10 +11,9 @@
  */
 namespace recordlab::core::compat {
 
-// 旧工程里最核心的两个主 agent。
-// BSP 和 Nviz 共用同一套工作流状态机，但 agent 名称需要各自显式声明。
+// 旧工程里最核心的主 agent。
+// BSP 共用同一套工作流状态机，但 agent 名称需要各自显式声明。
 inline constexpr const char* kPrimaryBspAgent = "glasses_bsp_node";
-inline constexpr const char* kPrimaryNvizAgent = "glasses_nviz_node";
 
 inline constexpr const char* kPrimaryHelenAgent = "helen_node";
 

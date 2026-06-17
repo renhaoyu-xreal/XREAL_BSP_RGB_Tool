@@ -137,7 +137,6 @@ bool isExclusiveGlassesAgent(const QString &agentName) {
   // 本地眼镜链路共享同一套 XREAL bridge / USB 设备资源，切换主链路时
   // 必须先释放旧 agent，避免两个 subnode 同时抢设备导致 check 超时。
   return agentName == QString::fromUtf8(recordlab::core::compat::kPrimaryBspAgent) ||
-         agentName == QString::fromUtf8(recordlab::core::compat::kPrimaryNvizAgent) ||
          agentName == QString::fromUtf8(recordlab::core::compat::kPrimaryHelenAgent);
 }
 
@@ -368,8 +367,6 @@ void WorkspacePage::activateAgent(const QString &agentName) {
   // 独立 RGB 工具默认直接切到 BSP RGB 页，数据+命令页作为辅助工作页保留。
   if (agentName ==
           QString::fromUtf8(recordlab::core::compat::kPrimaryBspAgent) ||
-      agentName ==
-          QString::fromUtf8(recordlab::core::compat::kPrimaryNvizAgent) ||
       agentName ==
           QString::fromUtf8(recordlab::core::compat::kPrimaryHelenAgent)) {
     if (bspRgbPage_ && tabs_->indexOf(bspRgbPage_) >= 0) {

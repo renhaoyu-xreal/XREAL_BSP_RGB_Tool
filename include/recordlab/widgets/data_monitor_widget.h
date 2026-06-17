@@ -30,8 +30,6 @@ namespace recordlab::widgets {
 
 class CameraDisplayThread;
 class ImageDisplayWidget;
-class NvizMessageTreeWidget;
-class NvizTreePlotWidget;
 
 class DataMonitorWidget : public QWidget {
 public:
@@ -39,7 +37,6 @@ public:
 
   void handleRealtimeData(const QString &dataName, const nlohmann::json &value,
                           double timestamp, double frequency);
-  void setNvizDisplayMode(bool enabled);
   void setCameraPreviewEnabled(bool enabled);
   void setCameraDisplayActive(bool active);
   void syncLatestData(const recordlab::backend::DataReceiverManager *receiver);
@@ -58,15 +55,12 @@ private:
   ImageDisplayWidget *rightCameraWidget_ = nullptr;
   QGroupBox *cameraGroup_ = nullptr;
   QGroupBox *curveGroup_ = nullptr;
-  QGroupBox *nvizCurveGroup_ = nullptr;
   QLabel *selectedDataValueLabel_ = nullptr;
   QLabel *motionStatusValueLabel_ = nullptr;
   QListWidget *imuListWidget_ = nullptr;
   QListWidget *customListWidget_ = nullptr;
   QPlainTextEdit *imuStatusView_ = nullptr;
   QTabWidget *leftTabWidget_ = nullptr;
-  NvizMessageTreeWidget *nvizTreeWidget_ = nullptr;
-  NvizTreePlotWidget *nvizTreePlotWidget_ = nullptr;
   SimpleCurvePlotWidget *curvePlotWidget_ = nullptr;
   QHash<QString, QListWidgetItem *> imuItems_;
   QHash<QString, QListWidgetItem *> customItems_;
@@ -79,9 +73,7 @@ private:
   QHash<int, nlohmann::json> latestCameraMetaByIndex_;
   double latestCameraFrequency_ = 0.0;
   QString currentSelectedDataName_;
-  QString currentNvizFieldKey_;
   recordlab::backend::DataReceiverManager *dataReceiver_ = nullptr;
-  bool nvizDisplayMode_ = false;
   bool cameraPreviewEnabled_ = true;
   bool cameraDisplayActive_ = false;
   bool curveDirty_ = false;
@@ -105,9 +97,6 @@ private:
   void updateCurveSubscription(const QString &newDataName);
   bool curveSupportsCurrentSelection() const;
   void showRealtimeCurvePanel();
-  void showNvizCurvePanel();
-  void updateNvizCurveSelection(const QString &displayName,
-                                const QString &fieldKey);
   void updateCameraPreview(const nlohmann::json &value, double frequency);
   void updateMotionStatusLabel(const QString &status);
   QStringList cameraOverlayLines(int camIdx, double meanValue,

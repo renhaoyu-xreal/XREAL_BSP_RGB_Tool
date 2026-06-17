@@ -5,8 +5,6 @@
 #include "recordlab/common/topics.h"
 #include "recordlab/widgets/camera_display_thread.h"
 #include "recordlab/widgets/image_display_widget.h"
-#include "recordlab/widgets/nviz_message_tree_widget.h"
-#include "recordlab/widgets/nviz_tree_plot_widget.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -27,8 +25,6 @@
 #include <iostream>
 
 namespace recordlab::widgets {
-
-using recordlab::common::TOPIC_NVIZ_TREE;
 
 namespace {
 
@@ -187,17 +183,6 @@ DataMonitorWidget::DataMonitorWidget(QWidget *parent) : QWidget(parent) {
 
   leftTabWidget_->addTab(realtimePage, QStringLiteral("实时监控"));
 
-  nvizTreeWidget_ = new NvizMessageTreeWidget(leftTabWidget_);
-#ifdef RECORDLABC_SOURCE_DIR
-  const QString plotJsonPath =
-      QDir(QString::fromUtf8(RECORDLABC_SOURCE_DIR)).filePath(QStringLiteral("subnodes/nviz_node/plot.json"));
-#else
-  const QString plotJsonPath =
-      QDir(QCoreApplication::applicationDirPath()).filePath(QStringLiteral("subnodes/nviz_node/plot.json"));
-#endif
-  nvizTreeWidget_->loadFromPlotJson(plotJsonPath);
-  leftTabWidget_->addTab(nvizTreeWidget_, QStringLiteral("树形数据"));
-
   // 右侧主显示区
   auto *monitorDisplayPane = new QWidget(splitter);
   auto *monitorDisplayLayout = new QVBoxLayout(monitorDisplayPane);
@@ -232,37 +217,7 @@ DataMonitorWidget::DataMonitorWidget(QWidget *parent) : QWidget(parent) {
   curveGroup_ = new QGroupBox(QStringLiteral("普通曲线"), monitorDisplayPane);
   auto *curveLayout = new QVBoxLayout(curveGroup_);
   curveLayout->addWidget(curvePlotWidget_);
-  monitorDisplayLayout->addWidget(curveGroup_, 2);
-
-  // 绘图区域：将新的 nvizTreePlotWidget 放入独立的树形数据曲线区域
-  nvizTreePlotWidget_ = new NvizTreePlotWidget(monitorDisplayPane);
-  connect(nvizTreeWidget_, &NvizMessageTreeWidget::fieldSelectionsChanged, this,
-          [this](const QStringList &displayNames, const QStringList &fieldKeys) {
-            if (!nvizTreePlotWidget_) {
-              return;
-            }
-            nvizTreePlotWidget_->clearData();
-            if (fieldKeys.isEmpty()) {
-              currentNvizFieldKey_.clear();
-              showRealtimeCurvePanel();
-              selectedDataValueLabel_->setText(
-                  currentSelectedDataName_.isEmpty()
-                      ? QStringLiteral("当前选择: 未选择数据")
-                      : QStringLiteral("当前选择: %1").arg(currentSelectedDataName_));
-              return;
-            }
-            updateNvizCurveSelection(displayNames.join(QStringLiteral(", ")),
-                                     fieldKeys.join(QStringLiteral("|")));
-          });
-  connect(nvizTreeWidget_, &NvizMessageTreeWidget::selectedFieldSample, this,
-          [this](const QString &fieldKey, const QString &displayName, double timestamp, double value) {
-            nvizTreePlotWidget_->appendSample(fieldKey, displayName, timestamp, value);
-          });
-
-  nvizCurveGroup_ = new QGroupBox(QStringLiteral("树形数据曲线"), monitorDisplayPane);
-  auto *nvizCurveLayout = new QVBoxLayout(nvizCurveGroup_);
-  nvizCurveLayout->addWidget(nvizTreePlotWidget_);
-  monitorDisplayLayout->addWidget(nvizCurveGroup_, 4);
+  monitorDisplayLayout->addWidget(curveGroup_, 6);
 
   splitter->addWidget(monitorListPane);
   splitter->addWidget(monitorDisplayPane);
@@ -276,23 +231,12 @@ DataMonitorWidget::DataMonitorWidget(QWidget *parent) : QWidget(parent) {
   connect(imuListWidget_, &QListWidget::itemClicked, this,
           [this](QListWidgetItem *item) {
             customListWidget_->clearSelection();
-            if (nvizTreeWidget_) nvizTreeWidget_->clearFieldSelection();
-            currentNvizFieldKey_.clear();
             updateSelectableDataLabel(item ? baseDataName(item->text()) : QString());
           });
   connect(customListWidget_, &QListWidget::itemClicked, this,
           [this](QListWidgetItem *item) {
             imuListWidget_->clearSelection();
-            if (nvizTreeWidget_) nvizTreeWidget_->clearFieldSelection();
-            currentNvizFieldKey_.clear();
             updateSelectableDataLabel(item ? baseDataName(item->text()) : QString());
-          });
-  connect(nvizTreeWidget_, &NvizMessageTreeWidget::fieldSelectionChanged, this,
-          [this](const QString &displayName, const QString &fieldKey) {
-            Q_UNUSED(displayName);
-            Q_UNUSED(fieldKey);
-            imuListWidget_->clearSelection();
-            customListWidget_->clearSelection();
           });
 
   uiRefreshTimer_ = new QTimer(this);
@@ -324,13 +268,6 @@ void DataMonitorWidget::handleRealtimeData(const QString &dataName,
                                            double timestamp,
                                            double frequency) {
   // 缓存最新数据并分发到 IMU、状态、相机等各自显示路径。
-  if (dataName == QString::fromUtf8(TOPIC_NVIZ_TREE)) {
-    if (nvizTreeWidget_) {
-      nvizTreeWidget_->handleTreeData(value);
-    }
-    return;
-  }
-
   if (!cameraPreviewEnabled_ && dataName == QStringLiteral("camera_data")) {
     return;
   }
@@ -372,22 +309,6 @@ void DataMonitorWidget::handleRealtimeData(const QString &dataName,
   }
 
   latestValueTextByName_.insert(dataName, snapshotTextForValue(dataName, value));
-}
-
-void DataMonitorWidget::setNvizDisplayMode(bool enabled) {
-  // Nviz 页面不显示视频；普通实时曲线和树形数据曲线在同一块区域互斥显示。
-  if (nvizDisplayMode_ == enabled) {
-    return;
-  }
-
-  nvizDisplayMode_ = enabled;
-  setCameraPreviewEnabled(!nvizDisplayMode_);
-  if (curveGroup_) {
-    curveGroup_->setTitle(nvizDisplayMode_ ? QStringLiteral("传感器数据曲线")
-                                           : QStringLiteral("普通曲线"));
-  }
-
-  showRealtimeCurvePanel();
 }
 
 void DataMonitorWidget::setCameraPreviewEnabled(bool enabled) {
@@ -444,8 +365,7 @@ void DataMonitorWidget::setCameraDisplayActive(bool active) {
   lastFrequencyRefreshSec_ = 0.0;
   lastImuSnapshotRefreshSec_ = 0.0;
   refreshFrequencyIndicators();
-  updateCurveSubscription(currentNvizFieldKey_.isEmpty() ? currentSelectedDataName_
-                                                         : QString());
+  updateCurveSubscription(currentSelectedDataName_);
   if (cameraPreviewEnabled_) {
     startCameraDisplayThread();
   }
@@ -460,14 +380,6 @@ void DataMonitorWidget::syncLatestData(
 
   dataReceiver_ =
       const_cast<recordlab::backend::DataReceiverManager *>(receiver);
-
-  const QString nvizTreeName = QString::fromUtf8(TOPIC_NVIZ_TREE);
-  const auto latestNvizTree = receiver->getLatestData(nvizTreeName.toStdString());
-  if (latestNvizTree.is_object() && latestNvizTree.contains("value")) {
-    handleRealtimeData(nvizTreeName, latestNvizTree["value"],
-                       latestNvizTree.value("timestamp", 0.0),
-                       receiver->getFrequency(nvizTreeName.toStdString()));
-  }
 
   updateCurveSubscription(currentSelectedDataName_);
 
@@ -571,9 +483,6 @@ void DataMonitorWidget::appendCurveSample(const CurveSample &sample,
 
 void DataMonitorWidget::drainSelectedCurveBuffer() {
   // 从 DataReceiverManager 消费当前选中数据的曲线缓冲，并批量喂给绘图组件。
-  if (!currentNvizFieldKey_.isEmpty()) {
-    return;
-  }
   if (!dataReceiver_ || !curvePlotWidget_ || !curveSupportsCurrentSelection()) {
     return;
   }
@@ -688,38 +597,6 @@ void DataMonitorWidget::showRealtimeCurvePanel() {
   if (curveGroup_) {
     curveGroup_->setVisible(true);
   }
-  if (nvizCurveGroup_) {
-    nvizCurveGroup_->setVisible(false);
-  }
-}
-
-void DataMonitorWidget::showNvizCurvePanel() {
-  if (curveGroup_) {
-    curveGroup_->setVisible(false);
-  }
-  if (nvizCurveGroup_) {
-    nvizCurveGroup_->setVisible(true);
-  }
-}
-
-void DataMonitorWidget::updateNvizCurveSelection(const QString &displayName,
-                                                 const QString &fieldKey) {
-  updateCurveSubscription(QString());
-  currentSelectedDataName_.clear();
-  currentNvizFieldKey_ = fieldKey;
-
-  if (displayName.isEmpty() || fieldKey.isEmpty()) {
-    showRealtimeCurvePanel();
-    selectedDataValueLabel_->setText(QStringLiteral("当前选择: 未选择数据"));
-    if (nvizTreePlotWidget_) {
-      nvizTreePlotWidget_->clearData();
-    }
-    return;
-  }
-
-  showNvizCurvePanel();
-  selectedDataValueLabel_->setText(
-      QStringLiteral("当前选择: %1").arg(displayName));
 }
 
 void DataMonitorWidget::updateCameraPreview(const nlohmann::json &value,
@@ -850,9 +727,6 @@ QSize DataMonitorWidget::currentCameraTargetSize() const {
 
 void DataMonitorWidget::startCameraDisplayThread() {
   // 准备共享内存 reader 并启动后台显示线程，把最新预览帧送到左右图像卡片。
-  if (nvizDisplayMode_) {
-    return;
-  }
   if (!cameraDisplayActive_) {
     return;
   }
@@ -926,14 +800,14 @@ void DataMonitorWidget::stopCameraDisplayThread() {
 void DataMonitorWidget::scheduleCameraAttachRetry() {
   // 页面已经可见但 bridge 还没创建共享内存时，持续轻量重试；
   // 这样首次进入“数据 + 命令”页无需靠切换 tab 触发第二次 attach。
-  if (!cameraDisplayActive_ || !cameraPreviewEnabled_ || nvizDisplayMode_) {
+  if (!cameraDisplayActive_ || !cameraPreviewEnabled_) {
     return;
   }
   if (!cameraAttachRetryTimer_) {
     cameraAttachRetryTimer_ = new QTimer(this);
     cameraAttachRetryTimer_->setInterval(500);
     connect(cameraAttachRetryTimer_, &QTimer::timeout, this, [this]() {
-      if (!cameraDisplayActive_ || !cameraPreviewEnabled_ || nvizDisplayMode_) {
+      if (!cameraDisplayActive_ || !cameraPreviewEnabled_) {
         stopCameraAttachRetry();
         return;
       }

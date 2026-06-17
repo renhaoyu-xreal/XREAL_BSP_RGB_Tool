@@ -63,9 +63,6 @@ QString oneClickButtonText(const recordlab::workflow::WorkflowController *contro
   if (!controller) {
     return QStringLiteral("一键启动");
   }
-  if (controller->isNvizAgent()) {
-    return QStringLiteral("一键启动 Glasses_nviz_node");
-  }
   if (controller->isBspAgent()) {
     return QStringLiteral("一键启动 Glasses_bsp_node");
   }
@@ -309,7 +306,6 @@ void BspPage::populateAgentSelector() {
   }
   if (agents.isEmpty()) {
     agents.push_back(QString::fromUtf8(recordlab::core::compat::kPrimaryBspAgent));
-    agents.push_back(QString::fromUtf8(recordlab::core::compat::kPrimaryNvizAgent));
     agents.push_back(QString::fromUtf8(recordlab::core::compat::kPrimaryHelenAgent));
   }
 
@@ -433,8 +429,8 @@ void BspPage::updateOneClickButtonState() {
   oneClickButton_->setEnabled(
       supported && !running && !controller_->oneClickSucceeded());
   if (androidOneClickButton_) {
-    androidOneClickButton_->setVisible(controller_->isNvizAgent());
-    androidOneClickButton_->setEnabled(controller_->isNvizAgent() && !running);
+    androidOneClickButton_->setVisible(false);
+    androidOneClickButton_->setEnabled(false);
   }
 }
 
@@ -442,9 +438,8 @@ void BspPage::syncMonitorDisplayMode() {
   if (!monitorWidget_ || !controller_) {
     return;
   }
-  monitorWidget_->setNvizDisplayMode(controller_->isNvizAgent());
   monitorWidget_->setCameraPreviewEnabled(
-      !(controller_->isNvizAgent() || controller_->isHelenAgent()));
+      !controller_->isHelenAgent());
 }
 
 } // namespace recordlab::bsp

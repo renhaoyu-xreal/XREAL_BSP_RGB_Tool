@@ -31,7 +31,6 @@ AgentManager::AgentManager(const QString &configPath, QObject *parent)
   // 初始化 agent 类型映射、全局状态指针并加载本地配置。
   // Agent 类映射
   agentClasses_ = {{"imu_simulation", "BaseAgent"},
-                   {"glasses_nviz_node", "BaseAgent"},
                    {"glasses_bsp_node", "BaseAgent"},
                    {"helen_node", "BaseAgent"},
                    {"android", "BaseAgent"},

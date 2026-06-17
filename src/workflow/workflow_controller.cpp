@@ -9,11 +9,7 @@
 /*
  * workflow_controller.cpp
  *
- * 从 bsp_workflow_controller.cpp 演化而来。
- * 唯一的结构性差异：
- *   - ensureBspAgentSelected() → ensureValidAgentSelected()：同时接受 bsp 和 nviz
- *   - requestOneClick() 和 dispatchOneClickStartDevice() 通过 defaultStartDeviceParams()
- *     为 nviz 自动补上 data_type=3dof
+ * 从 bsp_workflow_controller.cpp 演化而来，专为 RGB 工具精简。
  *   - 日志里使用 agentLabel() 而不是硬编码 "glasses_bsp_node"
  */
 namespace recordlab::workflow {
@@ -219,7 +215,6 @@ bool WorkflowController::oneClickSucceeded() const
 bool WorkflowController::isTargetAgentSelected() const
 {
     return activeAgent_ == QString::fromUtf8(recordlab::core::compat::kPrimaryBspAgent)
-        || activeAgent_ == QString::fromUtf8(recordlab::core::compat::kPrimaryNvizAgent)
         || activeAgent_ == QString::fromUtf8(recordlab::core::compat::kPrimaryHelenAgent)
         || activeAgent_ == QString::fromUtf8(recordlab::core::compat::kPrimaryAndroidAgent);
 }
@@ -227,11 +222,6 @@ bool WorkflowController::isTargetAgentSelected() const
 bool WorkflowController::isBspAgent() const
 {
     return activeAgent_ == QString::fromUtf8(recordlab::core::compat::kPrimaryBspAgent);
-}
-
-bool WorkflowController::isNvizAgent() const
-{
-    return activeAgent_ == QString::fromUtf8(recordlab::core::compat::kPrimaryNvizAgent);
 }
 
 bool WorkflowController::isHelenAgent() const
@@ -267,10 +257,6 @@ void WorkflowController::requestOneClickWithInitDeviceParams(const QVariantMap& 
 
 void WorkflowController::requestAndroidOneClick()
 {
-    if (!isNvizAgent()) {
-        appendLog(QStringLiteral("Android IMU 一键启动只挂在 glasses_nviz_node 主链路下。"));
-        return;
-    }
     if (androidOneClickFlowActive_) {
         appendLog(QStringLiteral("Android IMU 一键启动仍在执行中，请等待当前流程完成。"));
         return;
@@ -784,7 +770,7 @@ void WorkflowController::handleStatusUpdate(const nlohmann::json& status)
     }
 
     if (androidOneClickFlowActive_) {
-        // Android IMU 是 glasses_nviz_node 页面下的辅助链路；执行期间不要让
+        // Android IMU 辅助链路；执行期间不要让
         // 眼镜 watchdog 的 disconnected/initializing 状态抢走 Android 流程状态。
         return;
     }
@@ -852,7 +838,7 @@ bool WorkflowController::ensureValidAgentSelected()
     }
 
     if (!isTargetAgentSelected()) {
-        appendLog(QStringLiteral("当前选中的 agent 是 %1，不在受支持的 agent 列表中（glasses_bsp_node / glasses_nviz_node / helen_node）。")
+        appendLog(QStringLiteral("当前选中的 agent 是 %1，不在受支持的 agent 列表中（glasses_bsp_node / helen_node）。")
                       .arg(activeAgent_));
         return false;
     }
@@ -916,11 +902,6 @@ void WorkflowController::cancelWatchdogWaitTimeout()
 
 QVariantMap WorkflowController::defaultStartDeviceParams() const
 {
-    // Nviz 的 start_device 需要指定 data_type，对齐 Python 版的
-    // _normalize_glasses_one_click_params() 中 params.setdefault("data_type", "3dof")
-    if (isNvizAgent()) {
-        return {{QStringLiteral("data_type"), QStringLiteral("3dof")}};
-    }
     if (isHelenAgent()) {
         return {
             {QStringLiteral("camera_mode"), QStringLiteral("none")},
@@ -949,9 +930,6 @@ QString WorkflowController::agentLabel() const
 {
     if (isBspAgent()) {
         return QStringLiteral("Glasses_bsp_node");
-    }
-    if (isNvizAgent()) {
-        return QStringLiteral("Glasses_nviz_node");
     }
     if (isHelenAgent()) {
         return QStringLiteral("helen_node");

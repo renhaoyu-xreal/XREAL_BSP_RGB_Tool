@@ -1727,16 +1727,7 @@ void BspRecordingSubnode::fetchGlassConfig() {
     if (result.value("success", false)) {
       std::cout << "[BSP] glass_config.json fetched successfully" << std::endl;
     } else {
-      // 方法2: 尝试使用 shell 脚本
-      QProcess script;
-      script.start("bash", {"subnodes/nviz_node/shell/gf_3dof_end_record.sh",
-                            recordPath_});
-      if (script.waitForFinished(60000) && script.exitCode() == 0) {
-        std::cout << "[BSP] glass_config.json fetched via shell script"
-                  << std::endl;
-      } else {
-        std::cerr << "[BSP] Failed to fetch glass_config.json" << std::endl;
-      }
+      std::cerr << "[BSP] Failed to fetch glass_config.json" << std::endl;
     }
   } catch (const std::exception &e) {
     std::cerr << "[BSP] Failed to fetch glass_config.json: " << e.what()

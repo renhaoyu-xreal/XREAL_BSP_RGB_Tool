@@ -69,7 +69,7 @@ result = await agent.cmd('stop_all')
 ```
 
 ## 眼镜屏视频播放
-C++ 版本的 3DoF/NViz 脚本通过 `play_video_on_secondary_screen.py` 调用 `mpv`，默认使用无边框窗口定位到非主显示器，避免 Wayland 下全屏窗口回到当前显示器。
+C++ 版本的视频播放通过 `play_video_on_secondary_screen.py` 调用 `mpv`，默认使用无边框窗口定位到非主显示器，避免 Wayland 下全屏窗口回到当前显示器。
 
 安装依赖：
 ```bash
@@ -82,7 +82,7 @@ python3 scripts/test_play_video_on_glasses_screen.py /path/to/video.mp4
 ```
 
 ## 脚本参数弹窗
-RecordLabC 中脚本所需的业务参数由脚本自身通过 `dialog.multi_field_input(...)` 弹窗获取。界面只负责启动脚本、显示日志和流程状态，不再为 BSP/RAW/NViz 脚本维护固定参数输入框。
+RecordLabC 中脚本所需的业务参数由脚本自身通过 `dialog.multi_field_input(...)` 弹窗获取。界面只负责启动脚本、显示日志和流程状态，不再为 BSP/RAW 脚本维护固定参数输入框。
 
 ## 使用示例
 ```python

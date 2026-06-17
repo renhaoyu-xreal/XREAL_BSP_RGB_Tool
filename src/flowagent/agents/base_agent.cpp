@@ -753,7 +753,6 @@ CmdResult BaseAgent::launchSubnode() {
   auto environment = QProcessEnvironment::systemEnvironment();
   const bool usesXrealRuntime =
       name_ == QString::fromUtf8(recordlab::core::compat::kPrimaryBspAgent) ||
-      name_ == QString::fromUtf8(recordlab::core::compat::kPrimaryNvizAgent) ||
       name_ == QString::fromUtf8(recordlab::core::compat::kPrimaryHelenAgent);
   if (usesXrealRuntime) {
     const QString appRoot = cleanedOrEmpty(qEnvironmentVariable("RECORDLABC_ROOT")).isEmpty()

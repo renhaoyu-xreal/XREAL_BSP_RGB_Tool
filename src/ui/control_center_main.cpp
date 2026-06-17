@@ -55,7 +55,7 @@ void ControlCenterMainWindow::initUi() {
 
   auto *agentList = new QListWidget();
   agentList->addItems(
-      {"glasses_bsp_node", "glasses_nviz_node", "imu_simulation", "localhost"});
+      {"glasses_bsp_node", "imu_simulation", "localhost"});
   connect(agentList, &QListWidget::itemDoubleClicked,
           [this](QListWidgetItem *item) {
             onAgentSelected(item->text().toStdString());

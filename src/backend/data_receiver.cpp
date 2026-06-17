@@ -70,7 +70,6 @@ void DataReceiverProcess::run() {
   subscribeTopic(TOPIC_MOTION_STATUS, PORT_MOTION_STATUS);
   subscribeTopic(TOPIC_RECORD_TIMER, PORT_RECORD_TIMER);
   subscribeTopic(TOPIC_TIME_DELAY, PORT_TIME_DELAY);
-  subscribeTopic(TOPIC_NVIZ_TREE, PORT_NVIZ_TREE);
   subscribeTopic(TOPIC_ANDROID_IMU, PORT_ANDROID_IMU);
 
   std::cout << "[DataReceiver] Running, subscribed to " << subscribers_.size()
@@ -291,40 +290,6 @@ void DataReceiverProcess::convertAndEmit(const std::string &topicName,
     double delayMs = delayNs / 1e6;
     enqueuePendingEmit({QString::fromStdString(topicName), {{"value", delayMs}},
                        timestamp, freq});
-  }
-  // Nviz message tree
-  else if (topicName == TOPIC_NVIZ_TREE) {
-    static std::atomic<uint64_t> nvizTreeReceiveCount{0};
-    const uint64_t count = ++nvizTreeReceiveCount;
-    json value = data;
-    double dataTs = data.value("timestamp", timestamp);
-    if (dataTs > 1e12) {
-      dataTs /= 1e9;
-    } else if (dataTs > 1e9) {
-      dataTs /= 1e6;
-    }
-    const int groupId = data.value("group_id", -1);
-    const int msgId = data.value("msg_id", -1);
-    const std::string freqName =
-        topicName + ":" + std::to_string(groupId) + ":" + std::to_string(msgId);
-    trackDataReception(freqName, dataTs);
-    const double receiveFreq = getFrequency(freqName);
-    const double displayFreq =
-        data.contains("frequency_hz") && data["frequency_hz"].is_number()
-            ? data.value("frequency_hz", receiveFreq)
-            : receiveFreq;
-    value["frequency_hz"] = displayFreq;
-    if (count <= 20 || count % 1000 == 0) {
-      std::cerr << "[DataReceiver][NVIZ_TREE] received count=" << count
-                << " group=" << groupId << " msg=" << msgId
-                << " fields="
-                << (data.contains("fields") && data["fields"].is_array()
-                        ? data["fields"].size()
-                        : 0)
-                << " freq=" << displayFreq << std::endl;
-    }
-    enqueuePendingEmit(
-        {QString::fromStdString(topicName), value, dataTs, displayFreq});
   }
   // Motion status
   else if (topicName == TOPIC_MOTION_STATUS) {
@@ -617,11 +582,6 @@ void DataReceiverManager::pollReceiverData() {
       latestCameraItem = item;
       continue;
     }
-    if (item.dataName == QString::fromUtf8(TOPIC_NVIZ_TREE)) {
-      applyDataUpdate(item.dataName, item.value, item.timestamp, item.frequency);
-      emit dataUpdated(item.dataName, item.value, item.timestamp, item.frequency);
-      continue;
-    }
     if (subscribedNames.count(item.dataName.toStdString()) > 0) {
       applyDataUpdate(item.dataName, item.value, item.timestamp, item.frequency);
       emitItemsByName.insert(item.dataName, item);
@@ -651,12 +611,7 @@ void DataReceiverManager::pollReceiverData() {
 
 void DataReceiverManager::applyDataUpdate(const QString &dataName,
                                           const json &value, double timestamp,
-                                          double frequency) {
-  // 将新数据同步进 latestData_ 和可选的曲线缓冲区，并处理时间回退与降采样。
-  std::string name = dataName.toStdString();
-  double previousTimestamp = 0.0;
-  bool hasPreviousTimestamp = false;
-
+        
   // Update latest
   {
     QMutexLocker locker(&dataLock_);
