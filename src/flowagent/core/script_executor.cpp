@@ -7,6 +7,7 @@
 #include "recordlab/flowagent/core/script_executor.h"
 
 #include <QComboBox>
+#include <QCryptographicHash>
 #include <QDir>
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -18,6 +19,7 @@
 #include <QPointer>
 #include <QProcessEnvironment>
 #include <QRegularExpression>
+#include <QSettings>
 #include <QTextEdit>
 #include <QTimer>
 #include <QVBoxLayout>
@@ -31,6 +33,7 @@ namespace recordlab::flowagent::core {
 namespace {
 
 constexpr const char *kRuntimeEventPrefix = "__RECORDLAB_EVENT__ ";
+constexpr int kDialogHistoryLimit = 5;
 
 QString jsonString(const nlohmann::json &value, const char *key,
                    const QString &fallback = {}) {
@@ -101,6 +104,55 @@ QStringList productIdAndName(const QString &productLabel) {
     return {label, QStringLiteral("--")};
   }
   return {QStringLiteral("--"), label};
+}
+
+QString scriptHistoryScope(const std::shared_ptr<ScriptContext> &context) {
+  if (!context || context->scriptPath.empty()) {
+    return QStringLiteral("unknown_script");
+  }
+  const auto scriptPath = QString::fromStdString(context->scriptPath);
+  return QString::fromLatin1(
+      QCryptographicHash::hash(scriptPath.toUtf8(), QCryptographicHash::Sha1)
+          .toHex());
+}
+
+QString dialogHistoryKey(const std::shared_ptr<ScriptContext> &context,
+                         const QString &title, const QString &fieldName) {
+  return QStringLiteral("script_dialog_history/%1/%2/%3")
+      .arg(scriptHistoryScope(context),
+           QString::fromLatin1(
+               QCryptographicHash::hash(title.toUtf8(),
+                                        QCryptographicHash::Sha1)
+                   .toHex()),
+           fieldName);
+}
+
+QStringList loadDialogHistory(const QString &key) {
+  QSettings settings;
+  QStringList values = settings.value(key).toStringList();
+  values.removeAll(QString());
+  values.removeDuplicates();
+  while (values.size() > kDialogHistoryLimit) {
+    values.removeLast();
+  }
+  return values;
+}
+
+void saveDialogHistory(const QString &key, const QString &value) {
+  const QString trimmed = value.trimmed();
+  if (trimmed.isEmpty()) {
+    return;
+  }
+
+  QStringList values = loadDialogHistory(key);
+  values.removeAll(trimmed);
+  values.prepend(trimmed);
+  while (values.size() > kDialogHistoryLimit) {
+    values.removeLast();
+  }
+
+  QSettings settings;
+  settings.setValue(key, values);
 }
 
 } // namespace
@@ -402,7 +454,7 @@ void ScriptExecutor::handleDialogEvent(const nlohmann::json &event) {
     auto *form = new QFormLayout();
     struct FieldInput {
       QString name;
-      QLineEdit *edit = nullptr;
+      QString historyKey;
       QComboBox *combo = nullptr;
     };
     std::vector<FieldInput> inputs;
@@ -414,21 +466,38 @@ void ScriptExecutor::handleDialogEvent(const nlohmann::json &event) {
         if (choices.isEmpty()) {
           choices = jsonStringList(field, "options");
         }
-        if (!choices.isEmpty()) {
-          auto *combo = new QComboBox(&dialog);
-          combo->addItems(choices);
-          const QString defaultValue = jsonString(field, "default");
-          const int defaultIndex = combo->findText(defaultValue);
+        const QString historyKey = dialogHistoryKey(context_, title, name);
+        const QStringList historyValues = loadDialogHistory(historyKey);
+        const QString configuredDefault = jsonString(field, "default").trimmed();
+        const QString effectiveDefault =
+            !historyValues.isEmpty() ? historyValues.first() : configuredDefault;
+
+        auto *combo = new QComboBox(&dialog);
+        combo->setEditable(choices.isEmpty());
+        combo->setInsertPolicy(QComboBox::NoInsert);
+
+        QStringList items = historyValues;
+        if (!configuredDefault.isEmpty() && !items.contains(configuredDefault)) {
+          items << configuredDefault;
+        }
+        for (const auto &choice : choices) {
+          if (!items.contains(choice)) {
+            items << choice;
+          }
+        }
+        combo->addItems(items);
+
+        if (combo->isEditable()) {
+          combo->setCurrentText(effectiveDefault);
+        } else if (!effectiveDefault.isEmpty()) {
+          const int defaultIndex = combo->findText(effectiveDefault);
           if (defaultIndex >= 0) {
             combo->setCurrentIndex(defaultIndex);
           }
-          form->addRow(label, combo);
-          inputs.push_back({name, nullptr, combo});
-        } else {
-          auto *edit = new QLineEdit(jsonString(field, "default"), &dialog);
-          form->addRow(label, edit);
-          inputs.push_back({name, edit, nullptr});
         }
+
+        form->addRow(label, combo);
+        inputs.push_back({name, historyKey, combo});
       }
     }
     layout->addLayout(form);
@@ -439,12 +508,9 @@ void ScriptExecutor::handleDialogEvent(const nlohmann::json &event) {
     if (dialog.exec() == QDialog::Accepted) {
       nlohmann::json values = nlohmann::json::object();
       for (const auto &input : inputs) {
-        if (input.combo) {
-          values[input.name.toStdString()] =
-              input.combo->currentText().toStdString();
-        } else if (input.edit) {
-          values[input.name.toStdString()] = input.edit->text().toStdString();
-        }
+        const QString value = input.combo ? input.combo->currentText() : QString();
+        values[input.name.toStdString()] = value.toStdString();
+        saveDialogHistory(input.historyKey, value);
       }
       response["response"] = values;
     } else {
