@@ -174,7 +174,8 @@ print(
     f"exposure_value={raw_exposure_value}, "
     f"gain={raw_gain}"
 )
-print("[BSP_RGB_RAW] 当前 RGB 预览已就绪，将执行双 reboot raw 抓取并恢复 RGB")
+print("[BSP_RGB_RAW] 当前 RGB 预览已就绪，将执行双 reboot raw 抓取")
+print("[BSP_RGB_RAW] 抓取完成后会异步重启，请等待画面恢复后进行下一次抓取")
 
 set_step(WorkflowStep.CAPTURE_RAW_FRAME, "running", "正在单次抓取 raw")
 result = _unwrap_cmd_result(glasses_agent.cmd("capture_raw_frame", {
@@ -199,11 +200,15 @@ metadata_file = result.get("metadata_file", "--")
 pre_capture_temp = result.get("pre_capture_rgb_temperature")
 restored_temp = result.get("restored_first_rgb_temperature")
 average_temp = result.get("average_rgb_temperature")
+next_capture_hint = result.get("next_capture_hint") or ""
+capture_success_message = f"单次抓取成功: {raw_file}"
+if next_capture_hint:
+    capture_success_message = f"{capture_success_message}；{next_capture_hint}"
 
 set_step(
     WorkflowStep.CAPTURE_RAW_FRAME,
     "success",
-    f"单次抓取成功: {raw_file}",
+    capture_success_message,
 )
 print(f"[BSP_RGB_RAW] ✓ Raw 抓取成功: {raw_file}")
 print(f"[BSP_RGB_RAW] metadata: {metadata_file}")
@@ -218,5 +223,7 @@ if result.get("rgb_restore_success") is not None:
         f"{'成功' if result.get('rgb_restore_success') else '失败'} "
         f"{result.get('rgb_restore_message', '')}".rstrip()
     )
+if next_capture_hint:
+    print(f"[BSP_RGB_RAW] {next_capture_hint}")
 
-_finish_once(True, f"单次抓取成功: {raw_file}")
+_finish_once(True, capture_success_message)

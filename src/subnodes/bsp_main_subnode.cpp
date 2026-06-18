@@ -68,16 +68,46 @@ std::optional<double> jsonNumberIfPresent(const json &value, const char *key) {
   return field.get<double>();
 }
 
-std::optional<double> firstAvailableRgbTemperature(const BspDevice *device) {
-  if (!device) {
-    return std::nullopt;
+bool rebootDispatchLooksSuccessful(const json &result) {
+  if (result.value("success", false)) {
+    return true;
   }
 
-  if (const auto latestFrameTemp =
-          jsonNumberIfPresent(device->latestRgbFrameMeta(), "temperature")) {
-    return latestFrameTemp;
+  const std::string stderrText = result.value("stderr", std::string());
+  const std::string stdoutText = result.value("stdout", std::string());
+  return stderrText.find("closed") != std::string::npos ||
+         stdoutText.find("closed") != std::string::npos;
+}
+
+bool startAsyncRebootRequest(BspDevice *device) {
+  if (!device) {
+    return false;
   }
-  return jsonNumberIfPresent(device->latestTemperatures(), "rgb_temperature");
+
+  const auto hostname = device->sshManager().hostname();
+  const auto port = device->sshManager().port();
+  const auto username = device->sshManager().username();
+  const auto password = device->sshManager().password();
+
+  try {
+    std::thread([hostname, port, username, password]() {
+      XrGlassesSSHManager manager(hostname, port, username, password);
+      const auto result = manager.executeCommand("/sbin/reboot", 3000);
+      if (rebootDispatchLooksSuccessful(result)) {
+        std::cout << "[BspRawCapture] Async reboot request dispatched"
+                  << std::endl;
+      } else {
+        std::cerr << "[BspRawCapture] Async reboot request failed: "
+                  << result.value("message", std::string())
+                  << std::endl;
+      }
+    }).detach();
+    return true;
+  } catch (const std::exception &e) {
+    std::cerr << "[BspRawCapture] Failed to start async reboot thread: "
+              << e.what() << std::endl;
+    return false;
+  }
 }
 
 void logImuSourceProbe(const char *tag, ImuSourceProbe &probe,
@@ -1539,22 +1569,16 @@ json BspRecordingSubnode::cmdCaptureRawFrame(uint32_t, const std::string &,
   bool restoreSuccess = true;
   std::string restoreMessage;
   std::optional<double> restoredFirstRgbTemperature;
+  bool rebootPendingAfterCapture = false;
   if (releasedForCapture) {
-    auto rebootResult = bspDevice->rebootViaSshAndWait();
-    restoreSuccess = rebootResult.value("success", false);
-    restoreMessage = rebootResult.value("message", std::string());
-    if (restoreSuccess) {
-      auto initResult = bspDevice->initialize({{"skip_restart_check", true}});
-      restoreSuccess = initResult.value("success", false);
-      restoreMessage = initResult.value("message", std::string());
-    }
-    if (restoreSuccess) {
-      auto startResult = bspDevice->start({{"camera_mode", CAMERA_MODE_RGB}});
-      restoreSuccess = startResult.value("success", false);
-      restoreMessage = startResult.value("message", std::string());
-      if (restoreSuccess) {
-        restoredFirstRgbTemperature = firstAvailableRgbTemperature(bspDevice);
-      }
+    rebootPendingAfterCapture = startAsyncRebootRequest(bspDevice);
+    restoreSuccess = rebootPendingAfterCapture;
+    restoreMessage = rebootPendingAfterCapture
+                         ? "已发起后台重启，等待 watchdog 自动恢复 RGB"
+                         : "failed to dispatch async reboot request";
+    if (!rebootPendingAfterCapture) {
+      std::cerr << "[BspRawCapture] Failed to dispatch post-capture reboot"
+                << std::endl;
     }
   }
 
@@ -1572,7 +1596,7 @@ json BspRecordingSubnode::cmdCaptureRawFrame(uint32_t, const std::string &,
                    {"message",
                     restoreSuccess
                         ? "Raw frame captured: " + localRawPath.toStdString()
-                        : "Raw frame captured, but failed to restore RGB: " +
+                        : "Raw frame captured, but failed to queue RGB reboot: " +
                               restoreMessage},
                    {"command", "capture_raw_frame"},
                    {"capture_dir", captureDir.toStdString()},
@@ -1585,6 +1609,8 @@ json BspRecordingSubnode::cmdCaptureRawFrame(uint32_t, const std::string &,
                    {"pre_capture_rgb_temperature", nullptr},
                    {"restored_first_rgb_temperature", nullptr},
                    {"average_rgb_temperature", nullptr},
+                   {"rgb_restore_pending", rebootPendingAfterCapture},
+                   {"next_capture_hint", nullptr},
                    {"rgb_restore_success", nullptr},
                    {"rgb_restore_message", restoreMessage}};
   if (!metadataFilePath.isEmpty()) {
@@ -1598,6 +1624,10 @@ json BspRecordingSubnode::cmdCaptureRawFrame(uint32_t, const std::string &,
   }
   if (releasedForCapture) {
     response["rgb_restore_success"] = restoreSuccess;
+    if (rebootPendingAfterCapture) {
+      response["next_capture_hint"] =
+          "请等待画面恢复后进行下一次抓取";
+    }
   }
   if (preCaptureRgbTemperature) {
     response["pre_capture_rgb_temperature"] = *preCaptureRgbTemperature;
