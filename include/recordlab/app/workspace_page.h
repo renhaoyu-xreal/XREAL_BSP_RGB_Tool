@@ -10,20 +10,11 @@ class QPushButton;
 class QTabWidget;
 
 namespace recordlab::bsp {
-class BspPage;
 class BspRgbPage;
 }
 
 namespace recordlab::workflow {
 class WorkflowController;
-}
-
-namespace recordlab::agent {
-class AgentManagementPage;
-}
-
-namespace recordlab::script {
-class ScriptExecutionPage;
 }
 
 namespace recordlab::backend {
@@ -64,20 +55,14 @@ private:
     QLabel* timerValueLabel_ = nullptr;
     QLabel* delayValueLabel_ = nullptr;
     QLabel* watchdogValueLabel_ = nullptr;
-    QTabWidget* tabs_ = nullptr;
     recordlab::workflow::WorkflowController* controller_ = nullptr;
     recordlab::backend::AgentManagerProcess* agentManagerProcess_ = nullptr;
     recordlab::backend::DataReceiverManager* dataReceiver_ = nullptr;
-    recordlab::script::ScriptExecutionPage* batchScriptPage_ = nullptr;
-    recordlab::bsp::BspPage* bspPage_ = nullptr;
     recordlab::bsp::BspRgbPage* bspRgbPage_ = nullptr;
-    recordlab::agent::AgentManagementPage* agentManagementPage_ = nullptr;
-    recordlab::script::ScriptExecutionPage* scriptDebugPage_ = nullptr;
 
     // 刷新顶部头信息。
     void updateHeader();
     void updateWatchdogHeader();
-    void updateBspRgbTab();
     void forceVisualRefresh();
 };
 

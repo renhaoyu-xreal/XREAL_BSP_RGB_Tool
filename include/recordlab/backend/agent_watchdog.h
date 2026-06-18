@@ -55,7 +55,6 @@ struct AgentStatus {
   // 配置（从 agents_config.json 加载）
   std::unordered_map<int, std::string> supportedDevices;     // product_id → 名称映射
   bool suppressDisconnectDialog = false;                     // 是否支持热插拔（不弹窗）
-  bool expectedTransientDisconnect = false;                  // 是否处于命令内预期断连窗口
 };
 
 // ============================================================================
@@ -85,9 +84,6 @@ public:
                         bool updateInitTime = false);
   void markAgentDisconnected(const std::string &agentName,
                              const std::string &error = {});
-  void beginExpectedTransientDisconnect(const std::string &agentName,
-                                        const std::string &message = {});
-  void endExpectedTransientDisconnect(const std::string &agentName);
 
   /// 设置 agent 的设备配置（supported_devices 映射和热插拔标志），
   /// 通常在 registerPrimaryAgent 后从 agents_config.json 加载。
@@ -95,9 +91,6 @@ public:
       const std::string &agentName,
       const std::unordered_map<int, std::string> &supportedDevices,
       bool suppressDisconnectDialog);
-  void pauseChecks(const std::string &reason = {});
-  void resumeChecks(const std::string &reason = {});
-  bool checksPaused() const { return pausedCheckCount_.load() > 0; }
 
   // ========== 查询 ==========
   QString getStatusSummary() const;
@@ -151,8 +144,6 @@ private:
   double checkInterval_ = 3.0;
   double startupDelay_ = 10.0;
   double checkTimeout_ = 10.0;
-  std::atomic<int> pausedCheckCount_{0};
-  std::string pauseReason_;
 
   // Callbacks
   CheckCallback checkCallback_;

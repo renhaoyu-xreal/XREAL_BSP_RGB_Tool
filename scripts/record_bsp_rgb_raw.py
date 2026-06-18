@@ -90,7 +90,7 @@ runtime_device = runtime_result.get("device") or {}
 latest_frame = runtime_result.get("latest_frame") or {}
 camera_mode = runtime_result.get("camera_mode")
 if not runtime_device.get("started"):
-    _fail_and_exit(WorkflowStep.GET_BSP_RUNTIME_STATE, "设备未启动")
+    _fail_and_exit(WorkflowStep.GET_BSP_RUNTIME_STATE, "设备未启动，请先启动 RGB")
 if camera_mode != "rgb":
     _fail_and_exit(
         WorkflowStep.GET_BSP_RUNTIME_STATE,
@@ -174,7 +174,8 @@ print(
     f"exposure_value={raw_exposure_value}, "
     f"gain={raw_gain}"
 )
-print("[BSP_RGB_RAW] 当前 RGB 预览已就绪，将执行双 reboot raw 抓取并恢复 RGB")
+print("[BSP_RGB_RAW] 当前 RGB 预览已就绪，将执行单次 raw 抓取")
+print("[BSP_RGB_RAW] 抓取完成后会后台重启恢复，请等待画面恢复后进行下一次抓取")
 
 set_step(WorkflowStep.CAPTURE_RAW_FRAME, "running", "正在单次抓取 raw")
 result = _unwrap_cmd_result(glasses_agent.cmd("capture_raw_frame", {
@@ -196,28 +197,27 @@ raw_file = result.get("raw_file", "--")
 frame_file = result.get("frame_file", "--")
 glass_timestamp_file = result.get("glass_timestamp_file", "--")
 metadata_file = result.get("metadata_file", "--")
-glass_timestamp_value = result.get("glass_timestamp_value")
-glass_timestamp_source = result.get("glass_timestamp_source")
-glass_timestamp_warning = result.get("glass_timestamp_warning")
 pre_capture_temp = result.get("pre_capture_rgb_temperature")
 restored_temp = result.get("restored_first_rgb_temperature")
 average_temp = result.get("average_rgb_temperature")
+next_capture_hint = result.get("next_capture_hint") or ""
+capture_success_message = f"单次抓取成功: {raw_file}"
+if next_capture_hint:
+    capture_success_message = f"{capture_success_message}；{next_capture_hint}"
+else:
+    capture_success_message = (
+        f"{capture_success_message}；请等待画面恢复后进行下一次抓取"
+    )
 
 set_step(
     WorkflowStep.CAPTURE_RAW_FRAME,
     "success",
-    f"单次抓取成功: {raw_file}",
+    capture_success_message,
 )
 print(f"[BSP_RGB_RAW] ✓ Raw 抓取成功: {raw_file}")
 print(f"[BSP_RGB_RAW] metadata: {metadata_file}")
 print(f"[BSP_RGB_RAW] frame: {frame_file}")
 print(f"[BSP_RGB_RAW] glass_timestamp: {glass_timestamp_file}")
-if glass_timestamp_value is not None:
-    print(f"[BSP_RGB_RAW] glass_timestamp_value: {glass_timestamp_value}")
-if glass_timestamp_source is not None:
-    print(f"[BSP_RGB_RAW] glass_timestamp_source: {glass_timestamp_source}")
-if glass_timestamp_warning:
-    print(f"[BSP_RGB_RAW] glass_timestamp_warning: {glass_timestamp_warning}")
 print(f"[BSP_RGB_RAW] 抓取前最后一帧温度: {pre_capture_temp}")
 print(f"[BSP_RGB_RAW] 恢复后首帧温度: {restored_temp}")
 print(f"[BSP_RGB_RAW] 平均温度: {average_temp}")
@@ -227,5 +227,7 @@ if result.get("rgb_restore_success") is not None:
         f"{'成功' if result.get('rgb_restore_success') else '失败'} "
         f"{result.get('rgb_restore_message', '')}".rstrip()
     )
+if next_capture_hint:
+    print(f"[BSP_RGB_RAW] {next_capture_hint}")
 
-_finish_once(True, f"单次抓取成功: {raw_file}")
+_finish_once(True, capture_success_message)

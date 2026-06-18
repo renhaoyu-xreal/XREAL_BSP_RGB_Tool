@@ -51,8 +51,6 @@ public:
   // ========== 直接访问 ==========
   flowagent::core::AgentManager *agentManager() { return agentManager_.get(); }
   AgentWatchdog *watchdog() { return watchdog_.get(); }
-  void pauseWatchdogChecks(const std::string &reason = {});
-  void resumeWatchdogChecks(const std::string &reason = {});
 
 signals:
   void commandResult(const nlohmann::json &result);

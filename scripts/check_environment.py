@@ -460,10 +460,7 @@ def build_report(project_root: Path) -> Dict[str, Any]:
     syntax_paths = [
         project_root / "scripts/runtime/run_recordlab_script.py",
         project_root / "scripts/runtime/run_recording_worker.py",
-        project_root / "scripts/record_bsp_imu.py",
-        project_root / "scripts/record_bsp_imu_cam.py",
-        project_root / "scripts/record_bsp_imu_static.py",
-        project_root / "scripts/record_bsp_imu_dynamic.py",
+        project_root / "scripts/record_bsp_rgb_raw.py",
     ]
     items.append(syntax_check(syntax_paths))
 

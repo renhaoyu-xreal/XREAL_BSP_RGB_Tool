@@ -2,7 +2,6 @@
  * AgentWatchdog 实现
  */
 #include "recordlab/backend/agent_watchdog.h"
-#include <algorithm>
 #include <chrono>
 #include <iostream>
 #include <thread>
@@ -140,7 +139,6 @@ void AgentWatchdog::markAgentInitializing(const std::string &agentName,
     auto it = registeredAgents_.find(agentName);
     if (it != registeredAgents_.end()) {
       it->second.state = AgentStatus::STATE_INITIALIZING;
-      it->second.expectedTransientDisconnect = false;
       it->second.lastError = message;
       changed = true;
     }
@@ -159,7 +157,6 @@ void AgentWatchdog::markAgentHealthy(const std::string &agentName,
     auto it = registeredAgents_.find(agentName);
     if (it != registeredAgents_.end()) {
       it->second.state = AgentStatus::STATE_HEALTHY;
-      it->second.expectedTransientDisconnect = false;
       it->second.lastError.clear();
       it->second.consecutiveFailures = 0;
       if (updateInitTime) {
@@ -182,7 +179,6 @@ void AgentWatchdog::markAgentDisconnected(const std::string &agentName,
     auto it = registeredAgents_.find(agentName);
     if (it != registeredAgents_.end()) {
       it->second.state = AgentStatus::STATE_DISCONNECTED;
-      it->second.expectedTransientDisconnect = false;
       it->second.lastError = error;
       changed = true;
     }
@@ -190,29 +186,6 @@ void AgentWatchdog::markAgentDisconnected(const std::string &agentName,
   if (changed) {
     notifyStatusUpdate();
   }
-}
-
-void AgentWatchdog::beginExpectedTransientDisconnect(
-    const std::string &agentName, const std::string &message) {
-  QMutexLocker locker(&lock_);
-  auto it = registeredAgents_.find(agentName);
-  if (it == registeredAgents_.end()) {
-    return;
-  }
-  it->second.expectedTransientDisconnect = true;
-  if (!message.empty()) {
-    it->second.lastError = message;
-  }
-}
-
-void AgentWatchdog::endExpectedTransientDisconnect(
-    const std::string &agentName) {
-  QMutexLocker locker(&lock_);
-  auto it = registeredAgents_.find(agentName);
-  if (it == registeredAgents_.end()) {
-    return;
-  }
-  it->second.expectedTransientDisconnect = false;
 }
 
 void AgentWatchdog::setAgentDeviceConfig(
@@ -229,48 +202,6 @@ void AgentWatchdog::setAgentDeviceConfig(
               << ": " << supportedDevices.size() << " supported device(s)"
               << ", suppress_dialog=" << (suppressDisconnectDialog ? "true" : "false")
               << std::endl;
-  }
-}
-
-void AgentWatchdog::pauseChecks(const std::string &reason) {
-  const int depth = pausedCheckCount_.fetch_add(1) + 1;
-  {
-    QMutexLocker locker(&lock_);
-    if (!reason.empty()) {
-      pauseReason_ = reason;
-    }
-  }
-  std::cout << "[Watchdog] Checks paused (depth=" << depth << ")";
-  if (!reason.empty()) {
-    std::cout << ": " << reason;
-  }
-  std::cout << std::endl;
-  notifyStatusUpdate();
-}
-
-void AgentWatchdog::resumeChecks(const std::string &reason) {
-  const int previous = pausedCheckCount_.load();
-  if (previous <= 0) {
-    return;
-  }
-  const int remaining = pausedCheckCount_.fetch_sub(1) - 1;
-  bool notify = false;
-  {
-    QMutexLocker locker(&lock_);
-    if (remaining <= 0) {
-      pausedCheckCount_.store(0);
-      pauseReason_.clear();
-      notify = true;
-    }
-  }
-  std::cout << "[Watchdog] Checks resumed (depth="
-            << std::max(remaining, 0) << ")";
-  if (!reason.empty()) {
-    std::cout << ": " << reason;
-  }
-  std::cout << std::endl;
-  if (notify) {
-    notifyStatusUpdate();
   }
 }
 
@@ -301,19 +232,12 @@ void AgentWatchdog::watchdogLoop() {
       }
 
       if (hasRegisteredAgents) {
-        if (checksPaused()) {
-          if (checkCount % 60 == 0) {
-            std::cout << "[Watchdog] Checks paused, skip health check" << std::endl;
-          }
-          checkCount++;
-        } else {
-          checkCount++;
-          if (checkCount % 60 == 1) {
-            std::cout << "[Watchdog] Checking " << registeredCount
-                      << " agents..." << std::endl;
-          }
-          checkAllAgents();
+        checkCount++;
+        if (checkCount % 60 == 1) {
+          std::cout << "[Watchdog] Checking " << registeredCount
+                    << " agents..." << std::endl;
         }
+        checkAllAgents();
       }
     } catch (const std::exception &e) {
       std::cerr << "[Watchdog] Error: " << e.what() << std::endl;
@@ -441,10 +365,6 @@ void AgentWatchdog::handleCheckSuccess(const std::string &agentName) {
     }
 
     auto &status = it->second;
-    if (status.expectedTransientDisconnect) {
-      status.lastError.clear();
-      return;
-    }
     const std::string oldState = status.state;
     status.lastError.clear();
 
@@ -488,10 +408,6 @@ void AgentWatchdog::handleCheckFailure(const std::string &agentName,
     }
 
     auto &status = it->second;
-    if (status.expectedTransientDisconnect) {
-      status.lastError = error;
-      return;
-    }
     const std::string oldState = status.state;
     status.lastError = error;
     suppressDialog = status.suppressDisconnectDialog;
@@ -575,12 +491,9 @@ void AgentWatchdog::notifyStatusUpdate() {
   int initializing = 0;
   QString summary = QStringLiteral("无监控");
   std::string primaryAgent;
-  const bool paused = checksPaused();
-  QString pauseReason;
 
   {
     QMutexLocker locker(&lock_);
-    pauseReason = QString::fromStdString(pauseReason_);
     for (auto &[name, s] : registeredAgents_) {
       if (s.state == AgentStatus::STATE_HEALTHY) {
         healthy++;
@@ -616,9 +529,7 @@ void AgentWatchdog::notifyStatusUpdate() {
       const auto &ps = primaryIt->second;
       const QString deviceLabel = glassesDeviceLabel(ps);
 
-      if (paused) {
-        summary = QStringLiteral("%1脚本执行中，暂停检查").arg(deviceLabel);
-      } else if (ps.state == AgentStatus::STATE_HEALTHY) {
+      if (ps.state == AgentStatus::STATE_HEALTHY) {
         summary = QStringLiteral("%1已连接").arg(deviceLabel);
       } else if (ps.state == AgentStatus::STATE_INITIALIZING) {
         summary = QStringLiteral("%1正在初始化...").arg(deviceLabel);
@@ -646,8 +557,6 @@ void AgentWatchdog::notifyStatusUpdate() {
 
   emit statusUpdate({{"type", "status_update"},
                      {"summary", summary.toStdString()},
-                     {"checks_paused", paused},
-                     {"pause_reason", pauseReason.toStdString()},
                      {"primary_agent", primaryAgent},
                      {"agents", agents}});
 }

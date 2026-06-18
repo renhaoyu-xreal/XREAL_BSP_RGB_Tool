@@ -25,7 +25,6 @@ inline constexpr const char *TOPIC_POSE = "pose_data";
 inline constexpr const char *TOPIC_MOTION_STATUS = "motion_status"; // 运动状态
 inline constexpr const char *TOPIC_RECORD_TIMER = "record_timer"; // 录制计时器
 inline constexpr const char *TOPIC_TIME_DELAY = "time_delay";     // 时间延迟
-inline constexpr const char *TOPIC_ANDROID_IMU = "android_imu_data";
 
 // ============================================================================
 // 端口配置
@@ -42,7 +41,6 @@ inline constexpr int PORT_RECORD_TIMER =
 inline constexpr int PORT_TIME_DELAY = 16521; // 时间延迟端口（时间同步信息）
 inline constexpr int PORT_MOTION_STATUS =
     16525; // 运动状态端口（静止/运动/活跃）
-inline constexpr int PORT_ANDROID_IMU = 16512; // Android IMU 数据端口
 
 // 默认主机
 inline constexpr const char *DEFAULT_HOST = "127.0.0.1";
@@ -63,11 +61,9 @@ inline QString getTopicAddress(const QString &topicName,
   static const std::unordered_map<std::string, int> portMap = {
       {TOPIC_CAMERA, PORT_CAMERA},
       {TOPIC_IMU, PORT_IMU},
-      {TOPIC_IMU1, PORT_IMU1},
       {TOPIC_MOTION_STATUS, PORT_MOTION_STATUS},
       {TOPIC_RECORD_TIMER, PORT_RECORD_TIMER},
       {TOPIC_TIME_DELAY, PORT_TIME_DELAY},
-      {TOPIC_ANDROID_IMU, PORT_ANDROID_IMU},
   };
 
   auto it = portMap.find(topicName.toStdString());

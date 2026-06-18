@@ -70,7 +70,6 @@ void DataReceiverProcess::run() {
   subscribeTopic(TOPIC_MOTION_STATUS, PORT_MOTION_STATUS);
   subscribeTopic(TOPIC_RECORD_TIMER, PORT_RECORD_TIMER);
   subscribeTopic(TOPIC_TIME_DELAY, PORT_TIME_DELAY);
-  subscribeTopic(TOPIC_ANDROID_IMU, PORT_ANDROID_IMU);
 
   std::cout << "[DataReceiver] Running, subscribed to " << subscribers_.size()
             << " topics" << std::endl;
@@ -237,40 +236,6 @@ void DataReceiverProcess::convertAndEmit(const std::string &topicName,
       // 改为存入 pendingEmits_ 缓冲，由 DataReceiverManager 定时 poll。
       enqueuePendingEmit(
           {QString::fromStdString(dataName), value, dataTs, freq});
-    }
-  }
-  // Android IMU data
-  else if (topicName == TOPIC_ANDROID_IMU) {
-    int imuType = data.value("type", 0);
-    std::string dataName = androidImuTypeToName(imuType);
-    if (dataName.empty())
-      return;
-
-    int64_t tsNs = data.value("timestamp_ns", int64_t(0));
-    double dataTs = tsNs > 0 ? tsNs / 1e9 : timestamp;
-
-    auto values = data.value("data", std::vector<double>{});
-    json value;
-    if (imuType == 12 || imuType == 13) {
-      value = {{"value", values.size() > 0 ? values[0] : 0.0}};
-    } else {
-      value = {{"x", values.size() > 0 ? values[0] : 0.0},
-               {"y", values.size() > 1 ? values[1] : 0.0},
-               {"z", values.size() > 2 ? values[2] : 0.0}};
-    }
-
-    trackDataReception(dataName, dataTs);
-    const double receiveFreq = getFrequency(dataName);
-    const double displayFreq =
-        data.contains("frequency_hz") && data["frequency_hz"].is_number()
-            ? data.value("frequency_hz", receiveFreq)
-            : receiveFreq;
-
-    double &lastSend = lastSendTime_[dataName];
-    if (dataTs - lastSend >= uiSendIntervalForData(dataName)) {
-      lastSend = dataTs;
-      enqueuePendingEmit(
-          {QString::fromStdString(dataName), value, dataTs, displayFreq});
     }
   }
   // Record timer
@@ -612,7 +577,8 @@ void DataReceiverManager::pollReceiverData() {
 void DataReceiverManager::applyDataUpdate(const QString &dataName,
                                           const json &value, double timestamp,
                                           double frequency) {
-  const std::string name = dataName.toStdString();
+  // 将新数据同步进 latestData_ 和可选的曲线缓冲区，并处理时间回退与降采样。
+  std::string name = dataName.toStdString();
   double previousTimestamp = 0.0;
   bool hasPreviousTimestamp = false;
 

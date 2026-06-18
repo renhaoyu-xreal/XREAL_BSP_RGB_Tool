@@ -372,7 +372,7 @@ def _resolve_agent_device_fsn(agent: Optional[Any]) -> Optional[str]:
 
 def resolve_record_glasses_label(
     agent: Optional[Any] = None,
-    agent_names: Iterable[str] = ("helen_node", "glasses_bsp_node"),
+    agent_names: Iterable[str] = ("glasses_bsp_node",),
     preferred_label: Optional[str] = None,
     allow_ssh: bool = True,
 ) -> str:
@@ -427,7 +427,7 @@ def resolve_record_glasses_fsn(
 
 def resolve_bsp_glasses_id(
     agent: Optional[Any] = None,
-    agent_names: Iterable[str] = ("helen_node", "glasses_bsp_node"),
+    agent_names: Iterable[str] = ("glasses_bsp_node",),
     preferred_label: Optional[str] = None,
 ) -> str:
     return resolve_record_glasses_label(
@@ -542,7 +542,7 @@ def build_bsp_dataset_name(
     glasses_id_override: Optional[str] = None,
     glasses_fsn_override: Optional[str] = None,
     agent: Optional[Any] = None,
-    agent_names: Iterable[str] = ("helen_node", "glasses_bsp_node"),
+    agent_names: Iterable[str] = ("glasses_bsp_node",),
 ) -> Tuple[str, str]:
     """构造 BSP 录制目录名。
 

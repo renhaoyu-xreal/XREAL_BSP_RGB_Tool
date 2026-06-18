@@ -21,7 +21,6 @@
 
 #include "recordlab/backend/agent_manager_process.h"
 #include "recordlab/backend/data_receiver.h"
-#include "recordlab/bsp/bsp_page.h"
 #include "recordlab/bsp/bsp_rgb_page.h"
 #include "recordlab/workflow/workflow_controller.h"
 #include "recordlab/common/commands.h"
@@ -133,13 +132,6 @@ EchoMasterRuntime &echoMasterRuntime() {
   return runtime;
 }
 
-bool isExclusiveGlassesAgent(const QString &agentName) {
-  // 本地眼镜链路共享同一套 XREAL bridge / USB 设备资源，切换主链路时
-  // 必须先释放旧 agent，避免两个 subnode 同时抢设备导致 check 超时。
-  return agentName == QString::fromUtf8(recordlab::core::compat::kPrimaryBspAgent) ||
-         agentName == QString::fromUtf8(recordlab::core::compat::kPrimaryHelenAgent);
-}
-
 } // namespace
 
 WorkspacePage::WorkspacePage(const recordlab::core::AppContext &context,
@@ -227,29 +219,14 @@ WorkspacePage::WorkspacePage(const recordlab::core::AppContext &context,
       &recordlab::workflow::WorkflowController::activeAgentWatchdogStateChanged,
       this, [this](const QString &) { updateWatchdogHeader(); });
 
-  tabs_ = new QTabWidget(this);
-  tabs_->setAutoFillBackground(true);
-  tabs_->setDocumentMode(false);
-
-  bspPage_ = new recordlab::bsp::BspPage(context_, controller_, this);
-  tabs_->addTab(bspPage_, QStringLiteral("数据 + 命令"));
-
   bspRgbPage_ = new recordlab::bsp::BspRgbPage(context_, controller_, this);
-
-  rootLayout->addWidget(tabs_, 1);
+  rootLayout->addWidget(bspRgbPage_, 1);
 
   connect(
       dataReceiver_, &recordlab::backend::DataReceiverManager::dataUpdated,
       this, [this](const QString &dataName, const nlohmann::json &value,
                    double timestamp, double frequency) {
-        if (!tabs_) {
-          return;
-        }
-
-        QWidget *current = tabs_->currentWidget();
-        if (current == bspPage_ && bspPage_) {
-          bspPage_->handleRealtimeData(dataName, value, timestamp, frequency);
-        } else if (current == bspRgbPage_ && bspRgbPage_) {
+        if (bspRgbPage_) {
           bspRgbPage_->handleRealtimeData(dataName, value, timestamp,
                                           frequency);
         }
@@ -278,36 +255,11 @@ WorkspacePage::WorkspacePage(const recordlab::core::AppContext &context,
                   QStringLiteral("时间延迟: %1 ms").arg(delayMs, 0, 'f', 1));
             }
           });
-  connect(tabs_, &QTabWidget::currentChanged, this, [this](int index) {
-    QWidget *current = tabs_->widget(index);
-    if (bspPage_) {
-      bspPage_->setCameraDisplayActive(current == bspPage_);
-      if (current == bspPage_) {
-        bspPage_->syncLatestData(dataReceiver_);
-      }
-    }
-    if (bspRgbPage_) {
-      bspRgbPage_->setCameraDisplayActive(current == bspRgbPage_);
-      if (current == bspRgbPage_) {
-        bspRgbPage_->syncLatestData(dataReceiver_);
-      }
-    }
-  });
-
-  updateBspRgbTab();
   updateHeader();
   updateWatchdogHeader();
-  if (bspPage_) {
-    bspPage_->setCameraDisplayActive(tabs_->currentWidget() == bspPage_);
-    if (tabs_->currentWidget() == bspPage_) {
-      bspPage_->syncLatestData(dataReceiver_);
-    }
-  }
   if (bspRgbPage_) {
-    bspRgbPage_->setCameraDisplayActive(tabs_->currentWidget() == bspRgbPage_);
-    if (tabs_->currentWidget() == bspRgbPage_) {
-      bspRgbPage_->syncLatestData(dataReceiver_);
-    }
+    bspRgbPage_->setCameraDisplayActive(true);
+    bspRgbPage_->syncLatestData(dataReceiver_);
   }
 }
 
@@ -325,95 +277,41 @@ WorkspacePage::~WorkspacePage() {
 }
 
 void WorkspacePage::activateAgent(const QString &agentName) {
-  // 激活主 agent 时同时更新表头、状态机和后台 manager 的目标对象。
-  const QString previousAgent = activeAgent_;
-  if (agentManagerProcess_ && previousAgent != agentName &&
-      isExclusiveGlassesAgent(previousAgent) &&
-      isExclusiveGlassesAgent(agentName)) {
-    std::cout << "[WorkspacePage] Releasing previous exclusive agent "
-              << previousAgent.toStdString() << " before switching to "
-              << agentName.toStdString() << std::endl;
-    agentManagerProcess_->sendCommand(
-        {{"action", recordlab::common::ManagerAction::RELEASE_AGENT},
-         {"agent_name", previousAgent.toStdString()}},
-        true);
-  }
-
-  activeAgent_ = agentName;
+  // 当前独立工具固定围绕 BSP RGB 主链路运行，外部传入的 agentName 仅用于兼容旧入口。
+  Q_UNUSED(agentName);
+  activeAgent_ = QString::fromUtf8(recordlab::core::compat::kPrimaryBspAgent);
   updateHeader();
-  controller_->setActiveAgent(agentName);
-  updateBspRgbTab();
+  controller_->setActiveAgent(activeAgent_);
   updateWatchdogHeader();
 
-  if (!agentName.trimmed().isEmpty()) {
+  if (!activeAgent_.trimmed().isEmpty()) {
     std::cout << "[WorkspacePage] Active agent switched to "
-              << agentName.toStdString()
+              << activeAgent_.toStdString()
               << "; watchdog auto-connect/start is enabled"
               << std::endl;
-    controller_->requestConnect();
   }
 
-  // 独立 RGB 工具默认直接切到 BSP RGB 页，数据+命令页作为辅助工作页保留。
-  if (agentName ==
-          QString::fromUtf8(recordlab::core::compat::kPrimaryBspAgent) ||
-      agentName ==
-          QString::fromUtf8(recordlab::core::compat::kPrimaryHelenAgent)) {
-    if (bspRgbPage_ && tabs_->indexOf(bspRgbPage_) >= 0) {
-      tabs_->setCurrentWidget(bspRgbPage_);
-    } else {
-      tabs_->setCurrentWidget(bspPage_);
-    }
+  if (bspRgbPage_) {
+    bspRgbPage_->setCameraDisplayActive(true);
+    bspRgbPage_->syncLatestData(dataReceiver_);
+    controller_->requestConnect();
   }
   forceVisualRefresh();
 }
 
 void WorkspacePage::forceVisualRefresh() {
-  if (!tabs_) {
-    update();
-    return;
-  }
   updateGeometry();
-  tabs_->updateGeometry();
   update();
-  tabs_->update();
-  if (auto *current = tabs_->currentWidget()) {
-    current->updateGeometry();
-    current->update();
+  if (bspRgbPage_) {
+    bspRgbPage_->updateGeometry();
+    bspRgbPage_->update();
   }
   QTimer::singleShot(0, this, [this]() {
     update();
-    if (tabs_) {
-      tabs_->update();
-      if (auto *current = tabs_->currentWidget()) {
-        current->update();
-      }
+    if (bspRgbPage_) {
+      bspRgbPage_->update();
     }
   });
-}
-
-void WorkspacePage::updateBspRgbTab() {
-  if (!tabs_ || !bspRgbPage_) {
-    return;
-  }
-
-  const bool shouldShow =
-      activeAgent_ ==
-      QString::fromUtf8(recordlab::core::compat::kPrimaryBspAgent);
-  const int existingIndex = tabs_->indexOf(bspRgbPage_);
-  if (shouldShow && existingIndex < 0) {
-    const int insertIndex = bspPage_ ? tabs_->indexOf(bspPage_) + 1 : 2;
-    tabs_->insertTab(qMax(0, insertIndex), bspRgbPage_,
-                     QStringLiteral("BSP RGB"));
-    return;
-  }
-
-  if (!shouldShow && existingIndex >= 0) {
-    if (tabs_->currentWidget() == bspRgbPage_ && bspPage_) {
-      tabs_->setCurrentWidget(bspPage_);
-    }
-    tabs_->removeTab(existingIndex);
-    bspRgbPage_->setCameraDisplayActive(false);
-  }
 }
 
 void WorkspacePage::dispatchWorkflowAction(const QString &actionName,

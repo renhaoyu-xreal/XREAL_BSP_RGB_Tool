@@ -102,46 +102,18 @@ bool runtimeStateStarted(flowagent::agents::BaseAgent* agent)
   return false;
 }
 
-bool shouldAutoRestorePrimaryRgb(const std::string& agentName)
+bool shouldAutoStartAfterInit(const std::string& agentName)
 {
   return agentName == recordlab::core::compat::kPrimaryBspAgent;
 }
 
-nlohmann::json defaultWatchdogStartDeviceParams(const std::string& agentName)
+nlohmann::json defaultStartDeviceParams(const std::string& agentName)
 {
-  if (!shouldAutoRestorePrimaryRgb(agentName)) {
-    return nlohmann::json::object();
+  if (agentName == recordlab::core::compat::kPrimaryBspAgent) {
+    return {{"camera_mode", std::string("rgb")}};
   }
-  return {{"camera_mode", std::string("rgb")}};
+  return nlohmann::json::object();
 }
-
-class ScopedExpectedDisconnect {
- public:
-  ScopedExpectedDisconnect(AgentWatchdog* watchdog, bool enabled,
-                           const std::string& agentName,
-                           const std::string& reason)
-      : watchdog_(enabled ? watchdog : nullptr), agentName_(agentName) {
-    if (!watchdog_) {
-      return;
-    }
-    watchdog_->beginExpectedTransientDisconnect(agentName_, reason);
-    active_ = true;
-  }
-
-  ~ScopedExpectedDisconnect() {
-    if (active_ && watchdog_) {
-      watchdog_->endExpectedTransientDisconnect(agentName_);
-    }
-  }
-
-  ScopedExpectedDisconnect(const ScopedExpectedDisconnect&) = delete;
-  ScopedExpectedDisconnect& operator=(const ScopedExpectedDisconnect&) = delete;
-
- private:
-  AgentWatchdog* watchdog_ = nullptr;
-  std::string agentName_;
-  bool active_ = false;
-};
 
 }  // namespace
 
@@ -220,18 +192,6 @@ AgentManagerProcess::AgentManagerProcess(const QString &configPath,
 }
 
 AgentManagerProcess::~AgentManagerProcess() { stop(); }
-
-void AgentManagerProcess::pauseWatchdogChecks(const std::string &reason) {
-  if (watchdog_) {
-    watchdog_->pauseChecks(reason);
-  }
-}
-
-void AgentManagerProcess::resumeWatchdogChecks(const std::string &reason) {
-  if (watchdog_) {
-    watchdog_->resumeChecks(reason);
-  }
-}
 
 void AgentManagerProcess::start() {
   // 启动后台工作线程、全局订阅和 watchdog，让命令循环进入可用状态。
@@ -358,7 +318,7 @@ void AgentManagerProcess::processCommand(const nlohmann::json &command) {
     if (action == ManagerAction::INIT_AGENT) {
       const auto agentName = command.value("agent_name", std::string());
       result = agentManager_->initializeAgent(agentName);
-      if (result.value("success", false) && isPrimaryAgentName(agentName) && agentName != "android") {
+      if (result.value("success", false) && isPrimaryAgentName(agentName)) {
         auto initParams = agentManager_->getInitDeviceParams(agentName);
         auto overrideIt = watchdogInitParamOverrides_.find(agentName);
         if (overrideIt != watchdogInitParamOverrides_.end()) {
@@ -368,6 +328,11 @@ void AgentManagerProcess::processCommand(const nlohmann::json &command) {
                   << agentName << " init_params=" << initParams.dump()
                   << std::endl;
         watchdog_->registerPrimaryAgent(agentName, initParams);
+        if (shouldAutoStartAfterInit(agentName)) {
+          lastStartDeviceParams_[agentName] =
+              defaultStartDeviceParams(agentName);
+          restoreStartDeviceAfterInit_[agentName] = true;
+        }
 
         // 从 agents_config.json 加载 supported_devices 映射和热插拔标志
         auto agentConfig = agentManager_->getAgentConfig(agentName);
@@ -391,11 +356,6 @@ void AgentManagerProcess::processCommand(const nlohmann::json &command) {
         }
         watchdog_->setAgentDeviceConfig(agentName, supportedDevices,
                                         suppressDialog);
-        if (shouldAutoRestorePrimaryRgb(agentName)) {
-          lastStartDeviceParams_[agentName] =
-              defaultWatchdogStartDeviceParams(agentName);
-          restoreStartDeviceAfterInit_[agentName] = true;
-        }
       }
 
     } else if (action == ManagerAction::SET_WATCHDOG_INIT_PARAMS) {
@@ -471,11 +431,6 @@ void AgentManagerProcess::processCommand(const nlohmann::json &command) {
                       {"status_value", 0},
                       {"data", {{"agent", agentName}}}};
           } else {
-            ScopedExpectedDisconnect expectedDisconnect(
-                watchdog_.get(),
-                isPrimaryAgent && cmdName == "capture_raw_frame",
-                agentName,
-                "capture_raw_frame in progress");
             auto r = agent->cmd(QString::fromStdString(cmdName), params, true,
                                 commandTimeoutSeconds(cmdName));
             result = {{"success", r.success},
@@ -488,8 +443,6 @@ void AgentManagerProcess::processCommand(const nlohmann::json &command) {
 
           if (isPrimaryAgent) {
             const bool success = result.value("success", false);
-            const auto commandPayload =
-                result.value("result", nlohmann::json::object());
             if (cmdName == "init_device") {
               if (success) {
                 watchdog_->markAgentHealthy(agentName, true);
@@ -502,34 +455,13 @@ void AgentManagerProcess::processCommand(const nlohmann::json &command) {
             } else if (cmdName == "start_device" || cmdName == "restart_device") {
               if (success ||
                   messageContains(result, QStringLiteral("Already started"))) {
-                if (shouldAutoRestorePrimaryRgb(agentName)) {
-                  lastStartDeviceParams_[agentName] =
-                      params.empty() ? defaultWatchdogStartDeviceParams(agentName)
-                                     : params;
-                  restoreStartDeviceAfterInit_[agentName] = true;
-                } else {
-                  lastStartDeviceParams_[agentName] = params;
-                  restoreStartDeviceAfterInit_[agentName] = true;
-                }
-                watchdog_->markAgentHealthy(agentName);
-              }
-            } else if (cmdName == "capture_raw_frame") {
-              // RAW 抓取内部会主动 release/reboot/restore RGB。只要本次命令结束后
-              // 设备已经恢复，就把 watchdog 状态拉回 healthy，避免后续 check
-              // 把这次临时断开误判为“重新插入后需要再 init/start 一次”。
-              if (success ||
-                  commandPayload.value("rgb_restore_success", false)) {
+                lastStartDeviceParams_[agentName] = params;
+                restoreStartDeviceAfterInit_[agentName] = true;
                 watchdog_->markAgentHealthy(agentName);
               }
             } else if ((cmdName == "stop_device" || cmdName == "release_device")
                        && success) {
-              if (shouldAutoRestorePrimaryRgb(agentName)) {
-                lastStartDeviceParams_[agentName] =
-                    defaultWatchdogStartDeviceParams(agentName);
-                restoreStartDeviceAfterInit_[agentName] = true;
-              } else {
-                restoreStartDeviceAfterInit_[agentName] = false;
-              }
+              restoreStartDeviceAfterInit_[agentName] = false;
               watchdog_->markAgentDisconnected(agentName,
                                                cmdName + " completed");
             }

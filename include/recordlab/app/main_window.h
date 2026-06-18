@@ -4,13 +4,11 @@
 
 #include "recordlab/core/app_context.h"
 
-class QStackedWidget;
 class QWidget;
 class QLabel;
 
 namespace recordlab::app {
 
-class EntryPage;
 class WorkspacePage;
 
 /*
@@ -28,15 +26,11 @@ public:
     explicit MainWindow(recordlab::core::AppContext context, QWidget* parent = nullptr);
 
 private slots:
-    // 从入口页收到主 agent 选择结果后切换到工作区。
     void onAgentSelected(const QString& agentName);
 
 private:
     recordlab::core::AppContext context_;
-    QStackedWidget* stack_ = nullptr;
-    EntryPage* entryPage_ = nullptr;
     WorkspacePage* workspacePage_ = nullptr;
-    QWidget* entryPageContainer_ = nullptr;
     QWidget* workspacePageContainer_ = nullptr;
     QLabel* versionLabel_ = nullptr;
 

@@ -11,13 +11,8 @@
  */
 namespace recordlab::core::compat {
 
-// 旧工程里最核心的主 agent。
-// BSP 共用同一套工作流状态机，但 agent 名称需要各自显式声明。
+// 当前独立工具只保留 BSP 主 agent。
 inline constexpr const char* kPrimaryBspAgent = "glasses_bsp_node";
-
-inline constexpr const char* kPrimaryHelenAgent = "helen_node";
-
-inline constexpr const char* kPrimaryAndroidAgent = "android";
 
 
 // 以下相对路径是当前工程内默认使用的本地资料路径。
@@ -76,15 +71,11 @@ inline QStringList bspCommandNames()
     };
 }
 
-// 这些脚本不是高频运行时核心，但它们代表了旧版 BSP 工作流的入口形态。
-// 新工程保留这份列表，便于后续做编排层兼容。
+// 当前独立 RGB 工具只保留 RAW 抓取脚本入口。
 inline QStringList bspScriptNames()
 {
     return {
-        QStringLiteral("scripts/record_bsp_imu.py"),
-        QStringLiteral("scripts/record_bsp_imu_cam.py"),
-        QStringLiteral("scripts/record_bsp_imu_static.py"),
-        QStringLiteral("scripts/record_bsp_imu_dynamic.py")
+        QStringLiteral("scripts/record_bsp_rgb_raw.py")
     };
 }
 

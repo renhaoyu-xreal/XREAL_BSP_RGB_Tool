@@ -9,8 +9,7 @@
 /*
  * workflow_controller.cpp
  *
- * 从 bsp_workflow_controller.cpp 演化而来，专为 RGB 工具精简。
- *   - 日志里使用 agentLabel() 而不是硬编码 "glasses_bsp_node"
+ * 当前独立工具仅服务 glasses_bsp_node。
  */
 namespace recordlab::workflow {
 
@@ -135,7 +134,6 @@ void WorkflowController::setActiveAgent(const QString& agentName)
     }
 
     oneClickFlowActive_ = false;
-    androidOneClickFlowActive_ = false;
     oneClickStartDeviceDispatched_ = false;
     oneClickStartDeviceParamsOverride_.clear();
     cancelWatchdogWaitTimeout();
@@ -214,9 +212,7 @@ bool WorkflowController::oneClickSucceeded() const
 
 bool WorkflowController::isTargetAgentSelected() const
 {
-    return activeAgent_ == QString::fromUtf8(recordlab::core::compat::kPrimaryBspAgent)
-        || activeAgent_ == QString::fromUtf8(recordlab::core::compat::kPrimaryHelenAgent)
-        || activeAgent_ == QString::fromUtf8(recordlab::core::compat::kPrimaryAndroidAgent);
+    return isBspAgent();
 }
 
 bool WorkflowController::isBspAgent() const
@@ -224,19 +220,9 @@ bool WorkflowController::isBspAgent() const
     return activeAgent_ == QString::fromUtf8(recordlab::core::compat::kPrimaryBspAgent);
 }
 
-bool WorkflowController::isHelenAgent() const
-{
-    return activeAgent_ == QString::fromUtf8(recordlab::core::compat::kPrimaryHelenAgent);
-}
-bool WorkflowController::isAndroidAgent() const
-{
-    return activeAgent_ == QString::fromUtf8(recordlab::core::compat::kPrimaryAndroidAgent);
-}
-
 void WorkflowController::requestResetWorkflow()
 {
     oneClickFlowActive_ = false;
-    androidOneClickFlowActive_ = false;
     oneClickStartDeviceDispatched_ = false;
     oneClickStartDeviceParamsOverride_.clear();
     setOneClickSucceeded(false);
@@ -253,20 +239,6 @@ void WorkflowController::requestOneClick()
 void WorkflowController::requestOneClickWithInitDeviceParams(const QVariantMap& params)
 {
     startOneClick(params, {});
-}
-
-void WorkflowController::requestAndroidOneClick()
-{
-    if (androidOneClickFlowActive_) {
-        appendLog(QStringLiteral("Android IMU 一键启动仍在执行中，请等待当前流程完成。"));
-        return;
-    }
-
-    androidOneClickFlowActive_ = true;
-    appendLog(QStringLiteral("开始一键启动 Android IMU。"));
-    transitionTo(State::AgentConnecting, QStringLiteral("已发出 Android Agent Connect 请求"));
-    emit actionRequested(QString::fromUtf8(recordlab::common::ManagerAction::INIT_AGENT),
-                         {{"agent_name", QStringLiteral("android")}});
 }
 
 void WorkflowController::requestOneClickWithStartDeviceParams(const QVariantMap& params)
@@ -324,7 +296,6 @@ void WorkflowController::requestConnect()
     }
 
     oneClickFlowActive_ = false;
-    androidOneClickFlowActive_ = false;
     oneClickStartDeviceDispatched_ = false;
     cancelWatchdogWaitTimeout();
     transitionTo(State::AgentConnecting, QStringLiteral("已排队 Connect 动作"));
@@ -339,7 +310,6 @@ void WorkflowController::requestCheck()
     }
 
     oneClickFlowActive_ = false;
-    androidOneClickFlowActive_ = false;
     oneClickStartDeviceDispatched_ = false;
     cancelWatchdogWaitTimeout();
     appendLog(QStringLiteral("已排队 check 请求"));
@@ -353,7 +323,6 @@ void WorkflowController::requestInitDevice()
     }
 
     oneClickFlowActive_ = false;
-    androidOneClickFlowActive_ = false;
     oneClickStartDeviceDispatched_ = false;
     cancelWatchdogWaitTimeout();
     transitionTo(State::DeviceInitializing, QStringLiteral("已排队 init_device 请求"));
@@ -367,7 +336,6 @@ void WorkflowController::requestStartDevice()
     }
 
     oneClickFlowActive_ = false;
-    androidOneClickFlowActive_ = false;
     oneClickStartDeviceDispatched_ = false;
     cancelWatchdogWaitTimeout();
     transitionTo(State::WaitingStartDeviceResponse, QStringLiteral("已排队 start_device 请求"));
@@ -381,7 +349,6 @@ void WorkflowController::requestStartRecord()
     }
 
     oneClickFlowActive_ = false;
-    androidOneClickFlowActive_ = false;
     oneClickStartDeviceDispatched_ = false;
     cancelWatchdogWaitTimeout();
     transitionTo(State::RecordingRequested, QStringLiteral("已排队 start_record 请求"));
@@ -395,7 +362,6 @@ void WorkflowController::requestStopRecord()
     }
 
     oneClickFlowActive_ = false;
-    androidOneClickFlowActive_ = false;
     oneClickStartDeviceDispatched_ = false;
     cancelWatchdogWaitTimeout();
     transitionTo(State::DeviceReady, QStringLiteral("已排队 stop_record 请求"));
@@ -405,7 +371,6 @@ void WorkflowController::requestStopRecord()
 void WorkflowController::requestStopAllAgents()
 {
     oneClickFlowActive_ = false;
-    androidOneClickFlowActive_ = false;
     oneClickStartDeviceDispatched_ = false;
     setOneClickSucceeded(false);
     cancelWatchdogWaitTimeout();
@@ -434,7 +399,6 @@ void WorkflowController::requestExecuteCommand(const QString& agentName,
     }
 
     oneClickFlowActive_ = false;
-    androidOneClickFlowActive_ = false;
     oneClickStartDeviceDispatched_ = false;
     cancelWatchdogWaitTimeout();
 
@@ -471,7 +435,6 @@ void WorkflowController::requestEmergencyStop()
     }
 
     oneClickFlowActive_ = false;
-    androidOneClickFlowActive_ = false;
     oneClickStartDeviceDispatched_ = false;
     setOneClickSucceeded(false);
     cancelWatchdogWaitTimeout();
@@ -495,33 +458,6 @@ void WorkflowController::handleCommandResult(const nlohmann::json& result)
     }
 
     if (action == QString::fromUtf8(recordlab::common::ManagerAction::INIT_AGENT)) {
-        if (androidOneClickFlowActive_ &&
-            jsonStringValue(result, "agent_name") == QStringLiteral("android")) {
-            appendLog(QStringLiteral("Connect Android %1: %2")
-                          .arg(success ? QStringLiteral("成功") : QStringLiteral("失败"),
-                               message.isEmpty() ? QStringLiteral("<no message>") : message));
-
-            if (!success) {
-                androidOneClickFlowActive_ = false;
-                transitionTo(State::Failed, QStringLiteral("Android Agent Connect 失败"));
-                return;
-            }
-
-            transitionTo(State::WaitingStartDeviceResponse,
-                         QStringLiteral("Android Agent 已连接，开始执行 restart_device"));
-            QVariantMap payload;
-            payload.insert(QStringLiteral("agent_name"), QStringLiteral("android"));
-            payload.insert(QStringLiteral("cmd_name"), QStringLiteral("restart_device"));
-            payload.insert(QStringLiteral("params"), androidOneClickParams());
-            emit actionRequested(QString::fromUtf8(recordlab::common::ManagerAction::SEND_AGENT_COMMAND),
-                                 payload);
-            return;
-        }
-
-        if (androidOneClickFlowActive_) {
-            return;
-        }
-
         appendLog(QStringLiteral("Connect %1: %2")
                       .arg(success ? QStringLiteral("成功") : QStringLiteral("失败"),
                            message.isEmpty() ? QStringLiteral("<no message>") : message));
@@ -555,11 +491,6 @@ void WorkflowController::handleCommandResult(const nlohmann::json& result)
     }
 
     if (action == QString::fromUtf8(recordlab::common::ManagerAction::SEND_AGENT_COMMAND)) {
-        if (androidOneClickFlowActive_ &&
-            jsonStringValue(result, "agent_name") != QStringLiteral("android")) {
-            return;
-        }
-
         appendLog(QStringLiteral("%1 %2: %3")
                       .arg(cmdName,
                            success ? QStringLiteral("成功") : QStringLiteral("失败"),
@@ -571,7 +502,6 @@ void WorkflowController::handleCommandResult(const nlohmann::json& result)
                 setOneClickSucceeded(true);
             }
             oneClickFlowActive_ = false;
-            androidOneClickFlowActive_ = false;
             oneClickStartDeviceDispatched_ = false;
             cancelWatchdogWaitTimeout();
             transitionTo(State::DeviceReady, QStringLiteral("设备已经处于启动状态"));
@@ -594,9 +524,6 @@ void WorkflowController::handleCommandResult(const nlohmann::json& result)
                 transitionTo(State::DeviceInitializing,
                              QStringLiteral("init_device 已在设备链路中执行，继续等待结果"));
                 return;
-            }
-            if (androidOneClickFlowActive_ && cmdName == QStringLiteral("restart_device")) {
-                androidOneClickFlowActive_ = false;
             }
             oneClickFlowActive_ = false;
             oneClickStartDeviceDispatched_ = false;
@@ -629,15 +556,6 @@ void WorkflowController::handleCommandResult(const nlohmann::json& result)
             oneClickStartDeviceDispatched_ = false;
             cancelWatchdogWaitTimeout();
             transitionTo(State::DeviceReady, QStringLiteral("设备已就绪，可以进入录制阶段"));
-            return;
-        }
-
-        if (cmdName == QStringLiteral("restart_device")) {
-            androidOneClickFlowActive_ = false;
-            oneClickFlowActive_ = false;
-            oneClickStartDeviceDispatched_ = false;
-            cancelWatchdogWaitTimeout();
-            transitionTo(State::DeviceReady, QStringLiteral("Android IMU 已就绪，可以进入录制阶段"));
             return;
         }
 
@@ -769,12 +687,6 @@ void WorkflowController::handleStatusUpdate(const nlohmann::json& status)
         return;
     }
 
-    if (androidOneClickFlowActive_) {
-        // Android IMU 辅助链路；执行期间不要让
-        // 眼镜 watchdog 的 disconnected/initializing 状态抢走 Android 流程状态。
-        return;
-    }
-
     if (agentState == QStringLiteral("healthy")) {
         cancelWatchdogWaitTimeout();
         if (oneClickFlowActive_
@@ -838,7 +750,7 @@ bool WorkflowController::ensureValidAgentSelected()
     }
 
     if (!isTargetAgentSelected()) {
-        appendLog(QStringLiteral("当前选中的 agent 是 %1，不在受支持的 agent 列表中（glasses_bsp_node / helen_node）。")
+        appendLog(QStringLiteral("当前选中的 agent 是 %1，不在受支持的 agent 列表中（glasses_bsp_node）。")
                       .arg(activeAgent_));
         return false;
     }
@@ -902,18 +814,7 @@ void WorkflowController::cancelWatchdogWaitTimeout()
 
 QVariantMap WorkflowController::defaultStartDeviceParams() const
 {
-    if (isHelenAgent()) {
-        return {
-            {QStringLiteral("camera_mode"), QStringLiteral("none")},
-            {QStringLiteral("enable_display"), false},
-        };
-    }
-    return {};
-}
-
-QVariantMap WorkflowController::androidOneClickParams() const
-{
-    return {{QStringLiteral("tcp_port"), 8100}};
+    return {{QStringLiteral("camera_mode"), QStringLiteral("rgb")}};
 }
 
 QVariantMap WorkflowController::oneClickStartDeviceParams() const
@@ -930,12 +831,6 @@ QString WorkflowController::agentLabel() const
 {
     if (isBspAgent()) {
         return QStringLiteral("Glasses_bsp_node");
-    }
-    if (isHelenAgent()) {
-        return QStringLiteral("helen_node");
-    }
-    if (isAndroidAgent()) {
-        return QStringLiteral("Android");
     }
     return activeAgent_;
 }

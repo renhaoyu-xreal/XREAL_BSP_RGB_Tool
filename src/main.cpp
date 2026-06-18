@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
     // 初始化 Qt 应用、日志和运行时根目录，然后把上下文交给主窗口。
     QApplication application(argc, argv);
     application.setApplicationName(QStringLiteral("XREAL_BSP_RGB_Tool"));
-    application.setApplicationVersion(QStringLiteral("v1.0.1"));
+    application.setApplicationVersion(QStringLiteral("v1.0.0"));
     application.setOrganizationName(QStringLiteral("XREAL"));
 
     // 跨线程 signal/slot 如果传递 nlohmann::json，需要先把 metatype 注册给 Qt。

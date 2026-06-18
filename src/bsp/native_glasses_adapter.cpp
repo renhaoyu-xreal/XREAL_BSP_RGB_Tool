@@ -127,7 +127,7 @@ bool NativeGlassesPreflightReport::canCreateGlasses() const {
 }
 
 QString NativeGlassesPreflightReport::summary() const {
-  // 生成适合日志与 doctor 输出的一行预检摘要。
+  // 生成适合日志与 UI 展示的一行预检摘要。
   return QStringLiteral(
              "project-root:%1 | wheel:%2 | pyi:%3 | runtime-root:%4 | "
              "runtime-qt:%5(%6) | required-qt:%7 | bridge:%8 | creatable:%9")
@@ -144,7 +144,7 @@ QString NativeGlassesPreflightReport::summary() const {
 }
 
 nlohmann::json NativeGlassesPreflightReport::toJson() const {
-  // 将完整预检结果序列化成 JSON，供 doctor 和 UI 直接消费。
+  // 将完整预检结果序列化成 JSON，供 UI 和脚本直接消费。
   return {
       {"project_root", projectRoot.toStdString()},
       {"wheel_path", wheelPath.toStdString()},
