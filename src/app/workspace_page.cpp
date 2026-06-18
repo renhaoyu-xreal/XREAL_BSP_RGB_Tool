@@ -349,7 +349,7 @@ void WorkspacePage::activateAgent(const QString &agentName) {
   if (!agentName.trimmed().isEmpty()) {
     std::cout << "[WorkspacePage] Active agent switched to "
               << agentName.toStdString()
-              << "; waiting for explicit Connect/one-click before INIT_AGENT"
+              << "; watchdog auto-connect/start is enabled"
               << std::endl;
   }
 
@@ -365,6 +365,7 @@ void WorkspacePage::activateAgent(const QString &agentName) {
     } else {
       tabs_->setCurrentWidget(bspPage_);
     }
+    controller_->requestConnect();
   }
   forceVisualRefresh();
 }

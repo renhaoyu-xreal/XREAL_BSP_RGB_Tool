@@ -6,6 +6,7 @@
  */
 #include "recordlab/backend/agent_manager_process.h"
 #include "recordlab/common/commands.h"
+#include "recordlab/core/compatibility_contract.h"
 #include "recordlab/flowagent/agents/base_agent.h"
 
 #include <QElapsedTimer>
@@ -99,6 +100,19 @@ bool runtimeStateStarted(flowagent::agents::BaseAgent* agent)
     return true;
   }
   return false;
+}
+
+bool shouldAutoStartAfterInit(const std::string& agentName)
+{
+  return agentName == recordlab::core::compat::kPrimaryBspAgent;
+}
+
+nlohmann::json defaultStartDeviceParams(const std::string& agentName)
+{
+  if (agentName == recordlab::core::compat::kPrimaryBspAgent) {
+    return {{"camera_mode", std::string("rgb")}};
+  }
+  return nlohmann::json::object();
 }
 
 }  // namespace
@@ -314,6 +328,11 @@ void AgentManagerProcess::processCommand(const nlohmann::json &command) {
                   << agentName << " init_params=" << initParams.dump()
                   << std::endl;
         watchdog_->registerPrimaryAgent(agentName, initParams);
+        if (shouldAutoStartAfterInit(agentName)) {
+          lastStartDeviceParams_[agentName] =
+              defaultStartDeviceParams(agentName);
+          restoreStartDeviceAfterInit_[agentName] = true;
+        }
 
         // 从 agents_config.json 加载 supported_devices 映射和热插拔标志
         auto agentConfig = agentManager_->getAgentConfig(agentName);
