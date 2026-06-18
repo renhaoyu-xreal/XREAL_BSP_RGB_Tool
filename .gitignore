@@ -17,3 +17,4 @@ test_json_nan_cpp
 test_json_null
 
 .codex
+tmp.json
