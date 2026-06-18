@@ -82,13 +82,11 @@ add_executable(recordlabc
     src/main.cpp
 
     # --- app (UI 壳) ---
-    src/app/entry_page.cpp
     src/app/main_window.cpp
     src/app/workspace_page.cpp
 
     # --- bsp (BSP 页面与工作流) ---
     src/bsp/bsp_guide_status.cpp
-    src/bsp/bsp_page.cpp
     src/bsp/bsp_rgb_page.cpp
     src/bsp/bsp_asset_resolver.cpp
     src/bsp/bsp_orchestration_bridge.cpp
@@ -99,9 +97,6 @@ add_executable(recordlabc
     src/bsp/xreal_runtime_locator.cpp
     src/bsp/native_glasses_adapter.cpp
 
-    # --- agent (Agent 管理页面) ---
-    src/agent/agent_management_page.cpp
-
     # --- core ---
     src/core/app_context.cpp
     src/core/legacy_config_loader.cpp
@@ -109,16 +104,10 @@ add_executable(recordlabc
     src/core/logger.cpp
     src/core/usb_device_catalog.cpp
 
-    # --- script ---
     src/script/python_script_bridge.cpp
-    src/script/script_execution_page.cpp
 
     # --- widgets ---
     src/widgets/simple_curve_plot_widget.cpp
-    src/widgets/data_monitor_widget.cpp
-    src/widgets/data_output_directory_widget.cpp
-    src/widgets/nviz_message_tree_widget.cpp
-    src/widgets/nviz_tree_plot_widget.cpp
     src/widgets/camera_display_thread.cpp
     src/widgets/image_display_widget.cpp
 
@@ -150,18 +139,10 @@ add_executable(recordlabc
     src/common/motion_detector.cpp
     src/flowagent/core/script_executor.cpp
 
-    # --- Phase 5-6: 数据接收 & UI 控制中心 ---
+    # --- Phase 5-6: 数据接收 ---
     src/backend/data_receiver.cpp
-    src/ui/control_center_main.cpp
-
-    # --- Phase 8-9: NvizNode & IMU 仿真 ---
-    src/subnodes/nviz_node_subnode.cpp
-    src/subnodes/imu_sim_main_subnode.cpp
-    src/subnodes/android_subnode.cpp
 
     # --- Q_OBJECT 头文件（AUTOMOC 需要在 sources 中列出） ---
-    include/recordlab/agent/agent_management_page.h
-    include/recordlab/app/entry_page.h
     include/recordlab/app/main_window.h
     include/recordlab/app/workspace_page.h
     include/recordlab/backend/agent_watchdog.h
@@ -169,7 +150,6 @@ add_executable(recordlabc
     include/recordlab/backend/agent_manager_process.h
     include/recordlab/backend/data_receiver.h
     include/recordlab/backend/data_registry_server.h
-    include/recordlab/bsp/bsp_page.h
     include/recordlab/bsp/bsp_rgb_page.h
     include/recordlab/workflow/workflow_controller.h
     include/recordlab/core/ui_message_bridge.h
@@ -178,17 +158,9 @@ add_executable(recordlabc
     include/recordlab/flowagent/core/agent_manager.h
     include/recordlab/flowagent/core/script_executor.h
     include/recordlab/script/python_script_bridge.h
-    include/recordlab/script/script_execution_page.h
     include/recordlab/subnodes/main_subnode.h
     include/recordlab/subnodes/bsp_main_subnode.h
-    include/recordlab/subnodes/nviz_node_subnode.h
-    include/recordlab/subnodes/imu_sim_main_subnode.h
-    include/recordlab/subnodes/android_subnode.h
-    include/recordlab/ui/control_center_main.h
     include/recordlab/widgets/camera_display_thread.h
-    include/recordlab/widgets/data_output_directory_widget.h
-    include/recordlab/widgets/data_monitor_widget.h
-    include/recordlab/widgets/nviz_message_tree_widget.h
     include/recordlab/widgets/image_display_widget.h
 )
 
@@ -280,81 +252,6 @@ set_target_properties(bsp_main_subnode PROPERTIES
 )
 
 # ============================================================================
-# 独立子节点可执行文件: helen_main_subnode
-# Helen 是无 Linux 系统眼镜节点，当前复用 BSP/XREAL 采集实现并默认跳过 SSH。
-# ============================================================================
-add_executable(helen_main_subnode
-    src/subnodes/helen_main_subnode_entry.cpp
-    src/bsp/native_glasses_adapter.cpp
-    src/bsp/xreal_runtime_locator.cpp
-    src/common/camera_shared_memory.cpp
-    src/subnodes/bsp_main_subnode.cpp
-    src/subnodes/main_subnode.cpp
-    src/subnodes/base_subnode.cpp
-    src/common/motion_detector.cpp
-    src/common/data_registry_client.cpp
-
-    include/recordlab/subnodes/base_subnode.h
-    include/recordlab/subnodes/main_subnode.h
-    include/recordlab/subnodes/bsp_main_subnode.h
-)
-
-target_include_directories(helen_main_subnode
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
-
-target_compile_definitions(helen_main_subnode
-    PRIVATE
-        RECORDLABC_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
-)
-
-target_link_libraries(helen_main_subnode
-    PRIVATE
-        Qt6::Core
-        Qt6::Gui
-        Qt6::Network
-        echo_message_system
-)
-
-set_target_properties(helen_main_subnode PROPERTIES
-    AUTOMOC ON
-)
-
-# ============================================================================
-# 诊断工具: recordlabc_doctor
-# 用于新机器上的无界面启动诊断与 BSP 预检
-# ============================================================================
-add_executable(recordlabc_doctor
-    src/tools/doctor_main.cpp
-    src/core/app_context.cpp
-    src/core/legacy_config_loader.cpp
-    src/core/legacy_paths.cpp
-    src/bsp/bsp_asset_resolver.cpp
-    src/bsp/bsp_guide_status.cpp
-    src/bsp/bsp_sdk_locator.cpp
-    src/bsp/xreal_runtime_locator.cpp
-    src/bsp/native_glasses_adapter.cpp
-    src/common/camera_shared_memory.cpp
-)
-
-target_include_directories(recordlabc_doctor
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
-
-target_compile_definitions(recordlabc_doctor
-    PRIVATE
-        RECORDLABC_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
-)
-
-target_link_libraries(recordlabc_doctor
-    PRIVATE
-        Qt6::Core
-        nlohmann_json::nlohmann_json
-)
-
-# ============================================================================
 # 诊断工具: recordlabc_agent_probe
 # 用于单独验证 init_agent / check / init_device / start_device 链路
 # ============================================================================
@@ -435,121 +332,4 @@ target_link_libraries(recordlabc_agent_cmd
 target_compile_definitions(recordlabc_agent_cmd
     PRIVATE
         RECORDLABC_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
-)
-
-# ============================================================================
-# 独立子节点可执行文件: imu_sim_main_subnode
-# 用于独立启动 IMU 仿真子节点
-# ============================================================================
-add_executable(imu_sim_main_subnode
-    src/subnodes/imu_sim_main_subnode_entry.cpp
-    src/subnodes/imu_sim_main_subnode.cpp
-    src/subnodes/main_subnode.cpp
-    src/subnodes/base_subnode.cpp
-    src/common/camera_shared_memory.cpp
-    src/common/motion_detector.cpp
-    src/common/data_registry_client.cpp
-
-    include/recordlab/subnodes/base_subnode.h
-    include/recordlab/subnodes/main_subnode.h
-    include/recordlab/subnodes/imu_sim_main_subnode.h
-)
-
-target_include_directories(imu_sim_main_subnode
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
-
-target_compile_definitions(imu_sim_main_subnode
-    PRIVATE
-        RECORDLABC_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
-)
-
-target_link_libraries(imu_sim_main_subnode
-    PRIVATE
-        Qt6::Core
-        Qt6::Gui
-        Qt6::Network
-        echo_message_system
-)
-
-set_target_properties(imu_sim_main_subnode PROPERTIES
-    AUTOMOC ON
-)
-
-# ============================================================================
-# 独立子节点可执行文件: nviz_node_subnode
-# 用于独立启动 NVIZ 子节点
-# ============================================================================
-add_executable(nviz_node_subnode
-    src/subnodes/nviz_node_subnode_entry.cpp
-    src/subnodes/nviz_node_subnode.cpp
-    src/core/legacy_config_loader.cpp
-    src/core/usb_device_catalog.cpp
-    src/subnodes/main_subnode.cpp
-    src/subnodes/base_subnode.cpp
-    src/common/camera_shared_memory.cpp
-    src/common/motion_detector.cpp
-    src/common/data_registry_client.cpp
-
-    include/recordlab/subnodes/base_subnode.h
-    include/recordlab/subnodes/main_subnode.h
-    include/recordlab/subnodes/nviz_node_subnode.h
-)
-
-target_include_directories(nviz_node_subnode
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
-
-target_compile_definitions(nviz_node_subnode
-    PRIVATE
-        RECORDLABC_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
-)
-
-target_link_libraries(nviz_node_subnode
-    PRIVATE
-        Qt6::Core
-        Qt6::Gui
-        Qt6::Network
-        echo_message_system
-)
-
-set_target_properties(nviz_node_subnode PROPERTIES
-    AUTOMOC ON
-)
-
-# ============================================================================
-# 独立子节点可执行文件: android_subnode
-# 用于接收 Android get_imu_data TCP 数据并发布/录制 mobile_data
-# ============================================================================
-add_executable(android_subnode
-    src/subnodes/android_subnode_entry.cpp
-    src/subnodes/android_subnode.cpp
-    src/subnodes/base_subnode.cpp
-    src/common/data_registry_client.cpp
-
-    include/recordlab/subnodes/base_subnode.h
-    include/recordlab/subnodes/android_subnode.h
-)
-
-target_include_directories(android_subnode
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
-
-target_compile_definitions(android_subnode
-    PRIVATE
-        RECORDLABC_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
-)
-
-target_link_libraries(android_subnode
-    PRIVATE
-        Qt6::Core
-        Qt6::Network
-        echo_message_system
-)
-
-set_target_properties(android_subnode PROPERTIES
-    AUTOMOC ON
 )

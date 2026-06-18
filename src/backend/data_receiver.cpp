@@ -70,8 +70,6 @@ void DataReceiverProcess::run() {
   subscribeTopic(TOPIC_MOTION_STATUS, PORT_MOTION_STATUS);
   subscribeTopic(TOPIC_RECORD_TIMER, PORT_RECORD_TIMER);
   subscribeTopic(TOPIC_TIME_DELAY, PORT_TIME_DELAY);
-  subscribeTopic(TOPIC_NVIZ_TREE, PORT_NVIZ_TREE);
-  subscribeTopic(TOPIC_ANDROID_IMU, PORT_ANDROID_IMU);
 
   std::cout << "[DataReceiver] Running, subscribed to " << subscribers_.size()
             << " topics" << std::endl;
@@ -240,40 +238,6 @@ void DataReceiverProcess::convertAndEmit(const std::string &topicName,
           {QString::fromStdString(dataName), value, dataTs, freq});
     }
   }
-  // Android IMU data
-  else if (topicName == TOPIC_ANDROID_IMU) {
-    int imuType = data.value("type", 0);
-    std::string dataName = androidImuTypeToName(imuType);
-    if (dataName.empty())
-      return;
-
-    int64_t tsNs = data.value("timestamp_ns", int64_t(0));
-    double dataTs = tsNs > 0 ? tsNs / 1e9 : timestamp;
-
-    auto values = data.value("data", std::vector<double>{});
-    json value;
-    if (imuType == 12 || imuType == 13) {
-      value = {{"value", values.size() > 0 ? values[0] : 0.0}};
-    } else {
-      value = {{"x", values.size() > 0 ? values[0] : 0.0},
-               {"y", values.size() > 1 ? values[1] : 0.0},
-               {"z", values.size() > 2 ? values[2] : 0.0}};
-    }
-
-    trackDataReception(dataName, dataTs);
-    const double receiveFreq = getFrequency(dataName);
-    const double displayFreq =
-        data.contains("frequency_hz") && data["frequency_hz"].is_number()
-            ? data.value("frequency_hz", receiveFreq)
-            : receiveFreq;
-
-    double &lastSend = lastSendTime_[dataName];
-    if (dataTs - lastSend >= uiSendIntervalForData(dataName)) {
-      lastSend = dataTs;
-      enqueuePendingEmit(
-          {QString::fromStdString(dataName), value, dataTs, displayFreq});
-    }
-  }
   // Record timer
   else if (topicName == TOPIC_RECORD_TIMER) {
     trackDataReception(topicName, timestamp);
@@ -291,40 +255,6 @@ void DataReceiverProcess::convertAndEmit(const std::string &topicName,
     double delayMs = delayNs / 1e6;
     enqueuePendingEmit({QString::fromStdString(topicName), {{"value", delayMs}},
                        timestamp, freq});
-  }
-  // Nviz message tree
-  else if (topicName == TOPIC_NVIZ_TREE) {
-    static std::atomic<uint64_t> nvizTreeReceiveCount{0};
-    const uint64_t count = ++nvizTreeReceiveCount;
-    json value = data;
-    double dataTs = data.value("timestamp", timestamp);
-    if (dataTs > 1e12) {
-      dataTs /= 1e9;
-    } else if (dataTs > 1e9) {
-      dataTs /= 1e6;
-    }
-    const int groupId = data.value("group_id", -1);
-    const int msgId = data.value("msg_id", -1);
-    const std::string freqName =
-        topicName + ":" + std::to_string(groupId) + ":" + std::to_string(msgId);
-    trackDataReception(freqName, dataTs);
-    const double receiveFreq = getFrequency(freqName);
-    const double displayFreq =
-        data.contains("frequency_hz") && data["frequency_hz"].is_number()
-            ? data.value("frequency_hz", receiveFreq)
-            : receiveFreq;
-    value["frequency_hz"] = displayFreq;
-    if (count <= 20 || count % 1000 == 0) {
-      std::cerr << "[DataReceiver][NVIZ_TREE] received count=" << count
-                << " group=" << groupId << " msg=" << msgId
-                << " fields="
-                << (data.contains("fields") && data["fields"].is_array()
-                        ? data["fields"].size()
-                        : 0)
-                << " freq=" << displayFreq << std::endl;
-    }
-    enqueuePendingEmit(
-        {QString::fromStdString(topicName), value, dataTs, displayFreq});
   }
   // Motion status
   else if (topicName == TOPIC_MOTION_STATUS) {
@@ -615,11 +545,6 @@ void DataReceiverManager::pollReceiverData() {
   for (auto &item : pending) {
     if (item.dataName == QStringLiteral("camera_data")) {
       latestCameraItem = item;
-      continue;
-    }
-    if (item.dataName == QString::fromUtf8(TOPIC_NVIZ_TREE)) {
-      applyDataUpdate(item.dataName, item.value, item.timestamp, item.frequency);
-      emit dataUpdated(item.dataName, item.value, item.timestamp, item.frequency);
       continue;
     }
     if (subscribedNames.count(item.dataName.toStdString()) > 0) {

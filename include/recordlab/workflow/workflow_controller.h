@@ -13,16 +13,10 @@
 namespace recordlab::workflow {
 
 /*
- * 统一工作流控制器
+ * RGB BSP 独立工作流控制器
  *
- * 从 BspWorkflowController 演化而来，同时服务 glasses_bsp_node 和 glasses_nviz_node。
- * 核心状态机（Connect → Watchdog → InitDevice → StartDevice → DeviceReady → Record）
- * 在两种 agent 下完全一致，唯一区别是：
- *   - nviz 的 start_device 默认补上 data_type=3dof
- *   - 合法 agent 集合包含 bsp 和 nviz 两个
- *
- * UI 页面（BspPage / AgentManagementPage / ScriptExecutionPage）
- * 统一依赖此控制器，避免两套状态机导致的代码倍增。
+ * 负责 glasses_bsp_node 的 Connect → Watchdog → InitDevice → StartDevice
+ * → DeviceReady → Record 状态流转。
  */
 class WorkflowController : public QObject {
     Q_OBJECT
@@ -50,20 +44,11 @@ public:
     State state() const;
     QStringList logHistory() const;
 
-    /// 当前主 agent 是否属于受支持的 agent 集合（bsp 或 nviz）。
+    /// 当前主 agent 是否属于受支持的 agent 集合。
     bool isTargetAgentSelected() const;
 
     /// 便利：当前主 agent 是否为 BSP agent。
     bool isBspAgent() const;
-    /// 便利：当前主 agent 是否为 Nviz agent。
-    bool isNvizAgent() const;
-
-    /// 便利：当前主 agent 是否为 Helen 无 Linux 系统眼镜 agent。
-    bool isHelenAgent() const;
-
-    /// 便利：当前主 agent 是否为 Android agent。
-    bool isAndroidAgent() const;
-
 
     QString watchdogSummary() const;
     QString activeAgentWatchdogState() const;
@@ -78,8 +63,6 @@ public slots:
     void requestOneClick();
 
     void requestOneClickWithInitDeviceParams(const QVariantMap& params);
-
-    void requestAndroidOneClick();
 
     void requestOneClickWithStartDeviceParams(const QVariantMap& params);
     void requestOneClickWithInitAndStartDeviceParams(const QVariantMap& initParams,
@@ -122,7 +105,6 @@ private:
     State state_ = State::Idle;
     QStringList logHistory_;
     bool oneClickFlowActive_ = false;
-    bool androidOneClickFlowActive_ = false;
     bool oneClickSucceeded_ = false;
     QTimer* watchdogWaitTimer_ = nullptr;
     bool oneClickStartDeviceDispatched_ = false;
@@ -130,7 +112,7 @@ private:
 
     void appendLog(const QString& message);
     void transitionTo(State nextState, const QString& reason);
-    /// 校验当前主 agent 是否在受支持的集合里（bsp / nviz）。
+    /// 校验当前主 agent 是否在受支持的集合里。
     bool ensureValidAgentSelected();
     void dispatchAgentCommand(const QString& cmdName, const QVariantMap& params = {});
     void startOneClick(const QVariantMap& initDeviceParamsOverride,
@@ -144,10 +126,9 @@ private:
 
     void setOneClickSucceeded(bool success);
 
-    /// 为当前 agent 类型生成 start_device 的默认参数（nviz 补 data_type）。
+    /// 为当前 BSP agent 生成 start_device 的默认参数。
     QVariantMap defaultStartDeviceParams() const;
     QVariantMap oneClickStartDeviceParams() const;
-    QVariantMap androidOneClickParams() const;
     /// 返回人可读的 agent 标签，用于日志。
     QString agentLabel() const;
 };

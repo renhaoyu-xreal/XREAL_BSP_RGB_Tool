@@ -98,7 +98,7 @@ private:
 };
 
 // ============================================================================
-// CameraSharedMemoryReader — 读取端（DataMonitorWidget / CameraDisplayThread
+// CameraSharedMemoryReader — 读取端（UI 预览线程 / CameraDisplayThread
 // 使用）
 // ============================================================================
 

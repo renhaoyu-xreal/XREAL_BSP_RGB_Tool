@@ -174,8 +174,8 @@ print(
     f"exposure_value={raw_exposure_value}, "
     f"gain={raw_gain}"
 )
-print("[BSP_RGB_RAW] 当前 RGB 预览已就绪，将执行双 reboot raw 抓取")
-print("[BSP_RGB_RAW] 抓取完成后会异步重启，请等待画面恢复后进行下一次抓取")
+print("[BSP_RGB_RAW] 当前 RGB 预览已就绪，将执行单次 raw 抓取")
+print("[BSP_RGB_RAW] 抓取完成后会后台重启恢复，请等待画面恢复后进行下一次抓取")
 
 set_step(WorkflowStep.CAPTURE_RAW_FRAME, "running", "正在单次抓取 raw")
 result = _unwrap_cmd_result(glasses_agent.cmd("capture_raw_frame", {
@@ -204,6 +204,10 @@ next_capture_hint = result.get("next_capture_hint") or ""
 capture_success_message = f"单次抓取成功: {raw_file}"
 if next_capture_hint:
     capture_success_message = f"{capture_success_message}；{next_capture_hint}"
+else:
+    capture_success_message = (
+        f"{capture_success_message}；请等待画面恢复后进行下一次抓取"
+    )
 
 set_step(
     WorkflowStep.CAPTURE_RAW_FRAME,

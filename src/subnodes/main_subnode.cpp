@@ -1566,7 +1566,6 @@ void MainSubnode::createMainPublishers() {
   createPublisher(recordTimerPort_, "record_timer", "json", 0, false);
   createPublisher(timeDelayPort_, "time_delay", "json", 0, false);
   createPublisher(motionStatusPort_, "motion_status", "json", 0, true);
-  createPublisher(PORT_NVIZ_TREE, TOPIC_NVIZ_TREE, "json", 0, false);
   std::this_thread::sleep_for(std::chrono::seconds(1));
 }
 

@@ -765,6 +765,10 @@ void BspRgbPage::requestRuntimeState(bool force) {
   if (runtimeRequestPending_ && !force) {
     return;
   }
+  if (controller_->activeAgentWatchdogState().trimmed().isEmpty()) {
+    runtimeRequestPending_ = false;
+    return;
+  }
   runtimeRequestPending_ = true;
   controller_->requestExecuteCommand(bspAgentName(),
                                      QStringLiteral("get_bsp_runtime_state"));
@@ -786,8 +790,11 @@ void BspRgbPage::handleCommandResult(const nlohmann::json &result) {
     if (jsonSuccess(result, payload)) {
       applyRuntimeState(payload);
     } else {
-      appendLog(QStringLiteral("刷新运行态失败: %1")
-                    .arg(commandMessage(result, payload)));
+      const QString message = commandMessage(result, payload);
+      if (message.contains(QStringLiteral("not initialized"),
+                           Qt::CaseInsensitive)) {
+        return;
+      }
     }
     return;
   }

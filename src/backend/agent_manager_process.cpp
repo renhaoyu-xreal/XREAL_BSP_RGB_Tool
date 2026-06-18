@@ -318,7 +318,7 @@ void AgentManagerProcess::processCommand(const nlohmann::json &command) {
     if (action == ManagerAction::INIT_AGENT) {
       const auto agentName = command.value("agent_name", std::string());
       result = agentManager_->initializeAgent(agentName);
-      if (result.value("success", false) && isPrimaryAgentName(agentName) && agentName != "android") {
+      if (result.value("success", false) && isPrimaryAgentName(agentName)) {
         auto initParams = agentManager_->getInitDeviceParams(agentName);
         auto overrideIt = watchdogInitParamOverrides_.find(agentName);
         if (overrideIt != watchdogInitParamOverrides_.end()) {

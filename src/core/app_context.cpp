@@ -108,7 +108,7 @@ const RecordLabConfig& AppContext::recordLabConfig() const
 
 const QStringList& AppContext::startupWarnings() const
 {
-    // 暴露所有非阻断性预检告警，供状态栏或 doctor 页面集中展示。
+    // 暴露所有非阻断性预检告警，供状态栏或工作区信息区集中展示。
     return startupWarnings_;
 }
 

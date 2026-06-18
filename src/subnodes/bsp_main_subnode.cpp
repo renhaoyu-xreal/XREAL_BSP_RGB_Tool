@@ -1592,12 +1592,8 @@ json BspRecordingSubnode::cmdCaptureRawFrame(uint32_t, const std::string &,
     averageRgbTemperature = *restoredFirstRgbTemperature;
   }
 
-  json response = {{"success", restoreSuccess},
-                   {"message",
-                    restoreSuccess
-                        ? "Raw frame captured: " + localRawPath.toStdString()
-                        : "Raw frame captured, but failed to queue RGB reboot: " +
-                              restoreMessage},
+  json response = {{"success", true},
+                   {"message", "Raw frame captured: " + localRawPath.toStdString()},
                    {"command", "capture_raw_frame"},
                    {"capture_dir", captureDir.toStdString()},
                    {"raw_file", localRawPath.toStdString()},
@@ -1627,6 +1623,9 @@ json BspRecordingSubnode::cmdCaptureRawFrame(uint32_t, const std::string &,
     if (rebootPendingAfterCapture) {
       response["next_capture_hint"] =
           "请等待画面恢复后进行下一次抓取";
+    } else if (!restoreMessage.empty()) {
+      response["next_capture_hint"] =
+          "抓取已完成，但后台重启派发失败，请确认画面恢复后再进行下一次抓取";
     }
   }
   if (preCaptureRgbTemperature) {
@@ -1705,16 +1704,8 @@ void BspRecordingSubnode::fetchGlassConfig() {
     if (result.value("success", false)) {
       std::cout << "[BSP] glass_config.json fetched successfully" << std::endl;
     } else {
-      // 方法2: 尝试使用 shell 脚本
-      QProcess script;
-      script.start("bash", {"subnodes/nviz_node/shell/gf_3dof_end_record.sh",
-                            recordPath_});
-      if (script.waitForFinished(60000) && script.exitCode() == 0) {
-        std::cout << "[BSP] glass_config.json fetched via shell script"
-                  << std::endl;
-      } else {
-        std::cerr << "[BSP] Failed to fetch glass_config.json" << std::endl;
-      }
+      std::cerr << "[BSP] Failed to fetch glass_config.json: "
+                << result.value("message", std::string()) << std::endl;
     }
   } catch (const std::exception &e) {
     std::cerr << "[BSP] Failed to fetch glass_config.json: " << e.what()

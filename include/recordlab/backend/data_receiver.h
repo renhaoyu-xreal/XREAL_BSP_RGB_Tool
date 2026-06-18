@@ -43,16 +43,6 @@ inline std::string imuTypeToName(int type) {
   return it != map.end() ? it->second : "";
 }
 
-inline std::string androidImuTypeToName(int type) {
-  static const std::unordered_map<int, std::string> map = {
-      {1, "Android-gyro"},
-      {2, "Android-acc"},
-      {3, "Android-mag"},
-      {12, "Android-temperature"}};
-  auto it = map.find(type);
-  return it != map.end() ? it->second : "";
-}
-
 // 数据缓冲项（替代跨线程 Qt 信号，由 DataReceiverManager 定时 poll）
 struct PendingEmit {
   QString dataName;

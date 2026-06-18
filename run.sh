@@ -14,10 +14,8 @@ set -Eeuo pipefail
 PROJECT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 BUILD_DIR="${PROJECT_DIR}/build"
 BIN_FILE="${BUILD_DIR}/recordlabc"
-DOCTOR_SCRIPT="${PROJECT_DIR}/doctor.sh"
 
 SKIP_CLEANUP="${RECORDLABC_SKIP_CLEANUP:-0}"
-RUN_DOCTOR="${RECORDLABC_RUN_DOCTOR:-0}"
 TERM_TIMEOUT_SECONDS="${RECORDLABC_TERM_TIMEOUT_SECONDS:-5}"
 APP_ARGS=()
 
@@ -27,12 +25,10 @@ Usage: ./run.sh [options] [-- <recordlabc args>]
 
 Options:
   --skip-cleanup   不清理上次残留进程，直接启动
-  --doctor         启动前先运行 ./doctor.sh
   -h, --help       显示帮助
 
 Env:
   RECORDLABC_SKIP_CLEANUP=1       与 --skip-cleanup 等价
-  RECORDLABC_RUN_DOCTOR=1         与 --doctor 等价
   RECORDLABC_TERM_TIMEOUT_SECONDS 设置清理旧进程时的等待秒数，默认 5
   RECORDLABC_DEBUG=1              打开 Qt debug 日志
 EOF
@@ -42,10 +38,6 @@ while (($# > 0)); do
     case "$1" in
         --skip-cleanup)
             SKIP_CLEANUP=1
-            shift
-            ;;
-        --doctor)
-            RUN_DOCTOR=1
             shift
             ;;
         -h|--help)
@@ -224,7 +216,6 @@ cleanup_stale_runtime() {
         "${BUILD_DIR}/nviz_node_subnode"
         "${BUILD_DIR}/android_subnode"
         "${BUILD_DIR}/recordlabc_agent_probe"
-        "${BUILD_DIR}/recordlabc_doctor"
         "build/bsp_main_subnode"
         "build/helen_main_subnode"
         "build/imu_sim_main_subnode"
@@ -267,14 +258,6 @@ prepare_environment() {
     umask 022
 
     mkdir -p "${PROJECT_DIR}/data" "${PROJECT_DIR}/output"
-}
-
-run_doctor_if_requested() {
-    [[ "${RUN_DOCTOR}" == "1" ]] || return 0
-    [[ -x "${DOCTOR_SCRIPT}" ]] || die "找不到可执行的 doctor.sh: ${DOCTOR_SCRIPT}"
-
-    log "启动前执行 doctor 诊断..."
-    "${DOCTOR_SCRIPT}"
 }
 
 launch_app() {
@@ -324,7 +307,6 @@ else
 fi
 
 prepare_environment
-run_doctor_if_requested
 
 echo "--------------------------------------------------"
 launch_app

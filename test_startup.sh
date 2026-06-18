@@ -4,10 +4,9 @@
 #
 # 这个脚本的目的不是验证“BSP 真机录制已经完成”，而是一次性完成：
 # 1. 构建
-# 2. 无界面 doctor 诊断
-# 3. BSP 子节点本地预检
-# 4. Python 环境与脚本诊断
-# 5. Qt 主程序无头启动烟测
+# 2. BSP 子节点本地预检
+# 3. Python 环境与脚本诊断
+# 4. Qt 主程序无头启动烟测
 # ----------------------------------------------------------------------------
 
 set -euo pipefail
@@ -19,13 +18,10 @@ echo "=================================================="
 echo "    RecordLabC Startup Smoke Test"
 echo "=================================================="
 
-echo "[1/5] 编译工程..."
+echo "[1/4] 编译工程..."
 "${PROJECT_DIR}/build.sh"
 
-echo "[2/5] 运行 doctor 诊断..."
-"${PROJECT_DIR}/doctor.sh"
-
-echo "[3/5] 运行 BSP 本地预检..."
+echo "[2/4] 运行 BSP 本地预检..."
 set +e
 "${BUILD_DIR}/bsp_main_subnode" --preflight
 PREFLIGHT_EXIT=$?
@@ -41,12 +37,12 @@ else
     exit "${PREFLIGHT_EXIT}"
 fi
 
-echo "[4/5] 运行 Python 环境与脚本诊断..."
+echo "[3/4] 运行 Python 环境与脚本诊断..."
 python3 "${PROJECT_DIR}/scripts/check_environment.py" \
     --project-root "${PROJECT_DIR}" \
     --strict
 
-echo "[5/5] 执行无头启动烟测..."
+echo "[4/4] 执行无头启动烟测..."
 set +e
 timeout 6s env QT_QPA_PLATFORM=offscreen "${PROJECT_DIR}/run.sh"
 RUN_EXIT=$?
@@ -64,5 +60,4 @@ fi
 echo "=================================================="
 echo "烟测结束。"
 echo "如果要手动启动 UI: ./run.sh"
-echo "如果要看诊断 JSON: ./doctor.sh --json"
 echo "=================================================="

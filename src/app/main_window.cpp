@@ -15,14 +15,12 @@
 #include <QScreen>
 #include <QSize>
 #include <QSizePolicy>
-#include <QStackedWidget>
 #include <QStatusBar>
 #include <QTimer>
 #include <QWidget>
 
 #include <utility>
 
-#include "recordlab/app/entry_page.h"
 #include "recordlab/app/workspace_page.h"
 #include "recordlab/core/compatibility_contract.h"
 
@@ -161,18 +159,9 @@ MainWindow::MainWindow(recordlab::core::AppContext context, QWidget* parent)
         }
     )"));
 
-    stack_ = new QStackedWidget(this);
-    setCentralWidget(stack_);
-
-    entryPage_ = new EntryPage(context_);
     workspacePage_ = new WorkspacePage(context_);
-    entryPageContainer_ = makeResponsivePageContainer(entryPage_, this);
     workspacePageContainer_ = makeResponsivePageContainer(workspacePage_, this);
-    stack_->addWidget(entryPageContainer_);
-    stack_->addWidget(workspacePageContainer_);
-    stack_->setCurrentWidget(workspacePageContainer_);
-
-    connect(entryPage_, &EntryPage::agentSelected, this, &MainWindow::onAgentSelected);
+    setCentralWidget(workspacePageContainer_);
 
     versionLabel_ = new QLabel(
         QStringLiteral("版本：%1").arg(loadConfiguredVersion(context_)), this);
@@ -187,9 +176,7 @@ MainWindow::MainWindow(recordlab::core::AppContext context, QWidget* parent)
 
 void MainWindow::onAgentSelected(const QString& agentName)
 {
-    // 入口页选中主 agent 后，立即切换到工作区并同步状态栏提示。
     workspacePage_->activateAgent(agentName);
-    stack_->setCurrentWidget(workspacePageContainer_);
     workspacePageContainer_->update();
     workspacePage_->update();
     QTimer::singleShot(0, this, [this]() {
@@ -210,7 +197,7 @@ void MainWindow::showStartupMessages()
     // 普通预检告警只写入状态栏，减少每次启动时的交互打断。
     if (!context_.startupWarnings().isEmpty()) {
         statusBar()->showMessage(
-            QStringLiteral("启动预检存在告警，可在 doctor 或工作区信息区查看；启动时不再弹窗提示。"));
+            QStringLiteral("启动预检存在告警，可在工作区信息区查看；启动时不再弹窗提示。"));
     }
 
     const QString updateInfo = context_.recordLabConfig().updateInfo.trimmed();

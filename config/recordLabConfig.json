@@ -1,6 +1,6 @@
 {
   "version": "v1.0.2",
-  "update_info": "运行录制脚本前，请先确认 BSP RGB 链路已经稳定连接并进入 RGB 预览，再执行抓取或录制。",
+  "update_info": "1、所有表单增加历史记录功能，默认填写上一次的值，下拉可以选择近五次的值。\n2、取消了一键启动按钮，插上设备后会自动启动、断连恢复。",
   "usb_product_catalog": [
     {
       "vid": "0x3318",
@@ -20,58 +20,6 @@
   "script_catalog": {
     "agents": {
       "glasses_bsp_node": [
-        {
-          "relative_path": "scripts/record_bsp_imu.py",
-          "supported_model_ids": [
-            "1082"
-          ],
-          "supported_models": {
-            "1082": "Hylla"
-          },
-          "required_agents": [
-            "glasses_bsp_node"
-          ],
-          "enabled": true
-        },
-        {
-          "relative_path": "scripts/record_bsp_imu_static.py",
-          "supported_model_ids": [
-            "1082"
-          ],
-          "supported_models": {
-            "1082": "Hylla"
-          },
-          "required_agents": [
-            "glasses_bsp_node"
-          ],
-          "enabled": true
-        },
-        {
-          "relative_path": "scripts/record_bsp_imu_dynamic.py",
-          "supported_model_ids": [
-            "1082"
-          ],
-          "supported_models": {
-            "1082": "Hylla"
-          },
-          "required_agents": [
-            "glasses_bsp_node"
-          ],
-          "enabled": true
-        },
-        {
-          "relative_path": "scripts/record_bsp_imu_cam.py",
-          "supported_model_ids": [
-            "1082"
-          ],
-          "supported_models": {
-            "1082": "Hylla"
-          },
-          "required_agents": [
-            "glasses_bsp_node"
-          ],
-          "enabled": true
-        },
         {
           "relative_path": "scripts/record_bsp_rgb_raw.py",
           "supported_model_ids": [
